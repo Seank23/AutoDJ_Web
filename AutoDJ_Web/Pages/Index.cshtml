@@ -1,0 +1,27 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class="row">
+    <div class="col-sm-4 mb-3 mb-md-0">
+        <div class="panel panel-default">
+            <div class="panel-body">
+
+                <form id="searchForm" class="form-inline" method="POST">
+                    <div class="form-group" style="width: 50%; margin-right: 10px;">
+                        <label class="sr-only" for="searchText">Search</label>
+                        <input type="text" class="form-control" id="searchText" placeholder="Search" style="width: 100%;">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100px;">Search</button>
+                </form>
+
+                <div id="details" style="margin-top:20px">
+                    <p><b>Name:</b> Test</p>
+                    <p><b>Length:</b> 3:00</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
