@@ -4,22 +4,109 @@
     ViewData["Title"] = "Home page";
 }
 
+<script>
+    function updateResult(next)
+    {
+        $.ajax({
+            url: "/VideoResults",
+            type: "GET",
+            data: { next: next },
+            success: function (result) {
+                console.log(result);
+                if (result != null) {
+                    document.getElementById("resultIndex").innerHTML = result[0];
+                    document.getElementById("numResults").innerHTML = result[1];
+                    document.getElementById("resultName").innerHTML = result[3];
+                    document.getElementById("resultChannel").innerHTML = result[4];
+                    document.getElementById("resultDate").innerHTML = result[5];
+                    if (result[0] > 1)
+                        document.getElementById("prevButton").disabled = false;
+                    else
+                        document.getElementById("prevButton").disabled = true;
+                    if (result[0] < result[1])
+                        document.getElementById("nextButton").disabled = false;
+                    else
+                        document.getElementById("nextButton").disabled = true;
+                }
+            },
+            error(error) {
+                console.log(error);
+            }
+        });
+    }
+
+    function search()
+    {
+        var term = document.getElementById("searchText").value;
+
+        $.ajax({
+            url: "/?Handler=Search",
+            type: "GET",
+            data: { searchTerm: term },
+            success: function (result) {
+                if (result == 1) {
+                    $("#details").show();
+                    updateResult(true);
+                }
+                else
+                    $("#noResults").show();
+
+                document.getElementById("cancel").disabled = false;
+            }
+        });
+    }
+
+    function cancelSearch()
+    {
+        $.ajax({
+            url: "/?Handler=Cancel",
+            type: "GET",
+            success: function () {
+                $("#details").hide();
+                $("#noResults").hide();
+                document.getElementById("cancel").disabled = true;
+                document.getElementById("searchText").value = "";
+            }
+        });
+    }
+</script>
+
 <div class="row">
     <div class="col-sm-4 mb-3 mb-md-0">
-        <div class="panel panel-default">
-            <div class="panel-body">
+        <div class="card">
+            <div class="card-body">
 
                 <form id="searchForm" class="form-inline" method="POST">
-                    <div class="form-group" style="width: 50%; margin-right: 10px;">
+                    <div style="width:60%; margin-right:10px;">
                         <label class="sr-only" for="searchText">Search</label>
-                        <input type="text" class="form-control" id="searchText" placeholder="Search" style="width: 100%;">
+                        <input type="text" class="form-control" id="searchText" placeholder="Search" style="width:100%;">
                     </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100px;">Search</button>
+                    <div class="float-right">
+                        <button type="button" class="btn btn-primary mr-1" onclick="search()">Search</button>
+                        <button type="button" class="btn btn-danger" id="cancel" onclick="cancelSearch()" disabled>Cancel</button>
+                    </div>
                 </form>
 
-                <div id="details" style="margin-top:20px">
-                    <p><b>Name:</b> Test</p>
-                    <p><b>Length:</b> 3:00</p>
+                <div id="details" style="margin-top:20px; display:none;" >
+                    <div>
+                        <h5 class="text-muted">Video <span id="resultIndex"></span> of <span id="numResults"></span>:</h5>
+                        <p><b>Name:</b> <span id="resultName"></span></p>
+                        <p><b>Channel:</b> <span id="resultChannel"></span></p>
+                        <p><b>Date Published:</b> <span id="resultDate"></span></p>
+                    </div>
+
+                    <div id="navButtons" class="float-left">
+                        <button type="button" class="btn btn-secondary" id="prevButton" onclick="updateResult(false)" disabled>Previous</button>
+                        <button type="button" class="btn btn-secondary" id="nextButton" onclick="updateResult(true)">Next</button>
+                    </div>
+
+                    <div class="float-right">
+                        <button type="button" class="btn btn-primary" id="addToQueue">Add To Queue</button>
+                    </div>
+                </div>
+
+                <div id="noResults" style="margin-top:20px; display:none;">
+                    <p>No videos could be found.</p>
                 </div>
             </div>
         </div>
