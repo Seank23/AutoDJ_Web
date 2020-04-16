@@ -18,8 +18,7 @@ namespace AutoDJ_Web
         {
             SearchTerm = "";
             ResultIndex = -1;
-            Videos = new List<VideoModel>();
-            Videos.Add(new VideoModel(null, null, null, null, null));
+            Videos = new List<VideoModel>{ new VideoModel(null, null, null, null, null, null, null) };
         }
 
         public async Task Search()
@@ -27,28 +26,37 @@ namespace AutoDJ_Web
             var youtubeService = new YouTubeService(new BaseClientService.Initializer()
             {
                 ApiKey = "AIzaSyC0pX3JjTzni8IyMnhLImoU2QaJy_6SPuM",
-                ApplicationName = this.GetType().ToString()
+                ApplicationName = GetType().ToString()
             });
 
             var searchListRequest = youtubeService.Search.List("snippet");
             searchListRequest.Q = SearchTerm;
             searchListRequest.MaxResults = 5;
+            searchListRequest.Type = "video";
+            searchListRequest.VideoCategoryId = "10";
 
             var searchListResponse = await searchListRequest.ExecuteAsync();
+
+            var videoListRequest = youtubeService.Videos.List("snippet, contentDetails");
+            string idList = "";
+            foreach(var result in searchListResponse.Items)
+                idList += result.Id.VideoId + ", ";
+            videoListRequest.Id = idList;
+
+            var videoListResponse = await videoListRequest.ExecuteAsync();
+
             Videos = new List<VideoModel>();
 
-            foreach (var searchResult in searchListResponse.Items)
+            for(int i = 0; i < videoListResponse.Items.Count; i++)
             {
-                switch (searchResult.Id.Kind)
-                {
-                    case "youtube#video":
-                        Videos.Add(new VideoModel(searchResult.Id.VideoId, 
-                                                  searchResult.Snippet.Title, 
-                                                  searchResult.Snippet.ChannelTitle, 
-                                                  searchResult.Snippet.PublishedAt,
-                                                  searchResult.Snippet.Description));
-                        break;
-                }
+                var videoResult = videoListResponse.Items[i];
+                Videos.Add(new VideoModel(videoResult.Id, 
+                                            videoResult.Snippet.Title, 
+                                            videoResult.Snippet.ChannelTitle, 
+                                            videoResult.Snippet.PublishedAt,
+                                            videoResult.Snippet.Description,
+                                            videoResult.ContentDetails.Duration,
+                                            videoResult.Snippet.Thumbnails.Default__.Url));
             }
         }
     }
