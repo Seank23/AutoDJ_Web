@@ -1,7 +1,7 @@
 ﻿function updateResult(next) {
 
     $.ajax({
-        url: "/VideoResults",
+        url: "/Search/?Handler=UpdateResult",
         type: "GET",
         data: { next: next },
         success: function (result) {
@@ -37,7 +37,7 @@ function search() {
 
     $("#roller").show();
     $.ajax({
-        url: "/?Handler=Search",
+        url: "/Search/?Handler=Search",
         type: "GET",
         data: { searchTerm: term },
         success: function (result) {
@@ -54,8 +54,9 @@ function search() {
 }
 
 function cancelSearch() {
+
     $.ajax({
-        url: "/?Handler=Cancel",
+        url: "/Search/?Handler=Cancel",
         type: "GET",
         success: function () {
             $("#details").hide();

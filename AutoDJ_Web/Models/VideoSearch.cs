@@ -8,29 +8,27 @@ using System.Threading.Tasks;
 
 namespace AutoDJ_Web
 {
-    public class VideoSearch
+    public static class VideoSearch
     {
-        public string SearchTerm { get; set; }
         public static List<VideoModel> Videos { get; set; }
         public static int ResultIndex { get; set; } = -1;
 
-        public VideoSearch()
+        public static void ResetVideoSearch()
         {
-            SearchTerm = "";
             ResultIndex = -1;
             Videos = new List<VideoModel>{ new VideoModel(null, null, null, null, null, null, null) };
         }
 
-        public async Task Search()
+        public static async Task Search(string searchTerm)
         {
             var youtubeService = new YouTubeService(new BaseClientService.Initializer()
             {
                 ApiKey = "AIzaSyC0pX3JjTzni8IyMnhLImoU2QaJy_6SPuM",
-                ApplicationName = GetType().ToString()
+                ApplicationName = "AutoDJ_Web.VideoSearch"
             });
 
             var searchListRequest = youtubeService.Search.List("snippet");
-            searchListRequest.Q = SearchTerm;
+            searchListRequest.Q = searchTerm;
             searchListRequest.MaxResults = 5;
             searchListRequest.Type = "video";
             searchListRequest.VideoCategoryId = "10";
