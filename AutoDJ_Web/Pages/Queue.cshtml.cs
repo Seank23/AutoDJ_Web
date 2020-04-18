@@ -17,7 +17,7 @@ namespace AutoDJ_Web.Pages
             QueueItemModel queueItem = new QueueItemModel(vidToAdd);
             Models.QueueModel.Queue.Add(queueItem);
 
-            return new JsonResult(Models.QueueModel.Queue);
+            return new JsonResult(queueItem);
         }
     }
 }

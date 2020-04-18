@@ -7,6 +7,7 @@ namespace AutoDJ_Web.Models
 {
     public class QueueItemModel
     {
+        public int Id { get; set; }
         public VideoModel Video { get; set; }
         public int Rating { get; set; }
 
@@ -14,6 +15,7 @@ namespace AutoDJ_Web.Models
         {
             Video = video;
             Rating = 0;
+            Id = QueueModel.Queue.Count;
         }
     }
 }
