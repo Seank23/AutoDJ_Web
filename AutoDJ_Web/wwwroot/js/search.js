@@ -36,6 +36,7 @@ function search() {
     var term = document.getElementById("searchText").value;
 
     $("#roller").show();
+    document.getElementById("searchBtn").disabled = true;
     $.ajax({
         url: "/Search/?Handler=Search",
         type: "GET",
@@ -45,8 +46,10 @@ function search() {
                 $("#details").show();
                 updateResult(true);
             }
-            else
+            else if(result == 0)
                 $("#noResults").show();
+            else
+                $("#error").show();
 
             $("#roller").hide();
         }
@@ -61,6 +64,9 @@ function cancelSearch() {
         success: function () {
             $("#details").hide();
             $("#noResults").hide();
+            $("#error").hide();
+            $("#roller").hide();
+            document.getElementById("searchBtn").disabled = false;
             document.getElementById("cancel").disabled = true;
             document.getElementById("searchText").value = "";
         }

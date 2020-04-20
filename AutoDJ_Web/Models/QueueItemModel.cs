@@ -15,7 +15,7 @@ namespace AutoDJ_Web.Models
         {
             Video = video;
             Rating = 0;
-            Id = QueueModel.Queue.Count;
+            Id = QueueModel.NextId();
         }
     }
 }

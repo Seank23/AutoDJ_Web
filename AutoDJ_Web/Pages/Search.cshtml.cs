@@ -34,11 +34,19 @@ namespace AutoDJ_Web.Pages
         public JsonResult OnGetSearch(string searchTerm)
         {
             hasSearched = true;
-            VideoSearch.Search(searchTerm).Wait();
+            try
+            {
+                VideoSearch.Search(searchTerm).Wait();
 
-            if (VideoSearch.Videos.Count > 0)
-                return new JsonResult(1);
-            return new JsonResult(0);
+                if (VideoSearch.Videos.Count > 0)
+                    return new JsonResult(1);
+                return new JsonResult(0);
+            }
+            catch(Exception e)
+            {
+                System.Diagnostics.Debug.WriteLine(e);
+                return new JsonResult(-1);
+            }
         }
 
         public void OnGetCancel()

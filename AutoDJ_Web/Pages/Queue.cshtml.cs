@@ -19,5 +19,11 @@ namespace AutoDJ_Web.Pages
 
             return new JsonResult(queueItem);
         }
+
+        public JsonResult OnGetOrder()
+        {
+            Models.QueueModel.OrderQueue();
+            return new JsonResult(Models.QueueModel.GetOrderList());
+        }
     }
 }

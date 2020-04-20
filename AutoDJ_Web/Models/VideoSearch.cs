@@ -10,6 +10,7 @@ namespace AutoDJ_Web
 {
     public static class VideoSearch
     {
+
         public static List<VideoModel> Videos { get; set; }
         public static int ResultIndex { get; set; } = -1;
 
@@ -27,9 +28,9 @@ namespace AutoDJ_Web
                 ApplicationName = "AutoDJ_Web.VideoSearch"
             });
 
-            var searchListRequest = youtubeService.Search.List("snippet");
+            var searchListRequest = youtubeService.Search.List("id");
             searchListRequest.Q = searchTerm;
-            searchListRequest.MaxResults = 5;
+            searchListRequest.MaxResults = 3;
             searchListRequest.Type = "video";
             searchListRequest.VideoCategoryId = "10";
 
@@ -48,9 +49,9 @@ namespace AutoDJ_Web
             for(int i = 0; i < videoListResponse.Items.Count; i++)
             {
                 var videoResult = videoListResponse.Items[i];
-                Videos.Add(new VideoModel(videoResult.Id, 
-                                            videoResult.Snippet.Title, 
-                                            videoResult.Snippet.ChannelTitle, 
+                Videos.Add(new VideoModel(videoResult.Id,
+                                            videoResult.Snippet.Title,
+                                            videoResult.Snippet.ChannelTitle,
                                             videoResult.Snippet.PublishedAt,
                                             videoResult.Snippet.Description,
                                             videoResult.ContentDetails.Duration,
