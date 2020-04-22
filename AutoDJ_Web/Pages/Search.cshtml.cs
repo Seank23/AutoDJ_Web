@@ -4,16 +4,18 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Caching.Distributed;
+using NeoSmart.Caching.Sqlite;
 
 namespace AutoDJ_Web.Pages
 {
     public class SearchModel : PageModel
     {
-        public bool hasSearched = false;
+        private readonly IDistributedCache _cache;
 
-        public SearchModel()
+        public SearchModel(IDistributedCache cache)
         {
-
+            _cache = cache;
         }
 
         public JsonResult OnGetUpdateResult(bool next)
@@ -33,10 +35,17 @@ namespace AutoDJ_Web.Pages
 
         public JsonResult OnGetSearch(string searchTerm)
         {
-            hasSearched = true;
             try
             {
-                VideoSearch.Search(searchTerm).Wait();
+                if(_cache.GetString(searchTerm) == null)
+                {
+                    VideoSearch.Search(searchTerm, _cache).Wait();
+                }
+                else
+                {
+                    List<string[]> result = VideoSearch.ParseVideoDetailsString(_cache.GetString(searchTerm));
+                    VideoSearch.PopulateVideoModel(result);
+                }
 
                 if (VideoSearch.Videos.Count > 0)
                     return new JsonResult(1);

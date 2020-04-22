@@ -1,9 +1,12 @@
 ﻿using AutoDJ_Web.Models;
 using Google.Apis.Services;
 using Google.Apis.YouTube.v3;
+using Microsoft.Extensions.Caching.Distributed;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 
 namespace AutoDJ_Web
@@ -17,10 +20,10 @@ namespace AutoDJ_Web
         public static void ResetVideoSearch()
         {
             ResultIndex = -1;
-            Videos = new List<VideoModel>{ new VideoModel(null, null, null, null, null, null, null) };
+            Videos = new List<VideoModel>{ new VideoModel(null, null, null, null, null, null) };
         }
 
-        public static async Task Search(string searchTerm)
+        public static async Task Search(string searchTerm, IDistributedCache cache)
         {
             var youtubeService = new YouTubeService(new BaseClientService.Initializer()
             {
@@ -44,19 +47,62 @@ namespace AutoDJ_Web
 
             var videoListResponse = await videoListRequest.ExecuteAsync();
 
-            Videos = new List<VideoModel>();
+            List<string[]> videoDetails = new List<string[]>();
 
-            for(int i = 0; i < videoListResponse.Items.Count; i++)
+            for (int i = 0; i < videoListResponse.Items.Count; i++)
             {
                 var videoResult = videoListResponse.Items[i];
-                Videos.Add(new VideoModel(videoResult.Id,
-                                            videoResult.Snippet.Title,
-                                            videoResult.Snippet.ChannelTitle,
-                                            videoResult.Snippet.PublishedAt,
-                                            videoResult.Snippet.Description,
-                                            videoResult.ContentDetails.Duration,
-                                            videoResult.Snippet.Thumbnails.Default__.Url));
+                string[] resultArray = { videoResult.Id, videoResult.Snippet.Title, videoResult.Snippet.ChannelTitle, videoResult.Snippet.PublishedAt.Value.ToShortDateString(),
+                                         videoResult.ContentDetails.Duration, videoResult.Snippet.Thumbnails.Default__.Url };
+                videoDetails.Add(resultArray);
             }
+
+            var options = new DistributedCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromDays(1));
+            cache.SetString(searchTerm, VideoDetailsToString(videoDetails), options);
+            PopulateVideoModel(videoDetails);
+        }
+
+        public static void PopulateVideoModel(List<string[]> videoDetails)
+        {
+            Videos = new List<VideoModel>();
+
+            foreach(string[] details in videoDetails)
+            {
+                Videos.Add(new VideoModel(details[0], details[1], details[2], details[3], details[4], details[5]));
+            }
+        }
+
+        public static string VideoDetailsToString(List<string[]> details)
+        {
+            string output = "";
+
+            foreach(string[] array in details)
+            {
+                for(int i = 0; i < array.Length; i++)
+                {
+                    output += array[i];
+                    if (i < array.Length - 1)
+                        output += " ````` ";
+                }
+                output += " ~~~~~ ";
+            }
+            return output;
+        }
+
+        public static List<string[]> ParseVideoDetailsString(string str)
+        {
+            List<string[]> videoDetails = new List<string[]>();
+            string[] lists = str.Split(" ~~~~~ ");
+
+            foreach(string list in lists)
+            {
+                if (list != "")
+                {
+                    string[] details = list.Split(" ````` ");
+                    videoDetails.Add(details);
+                }
+            }
+            return videoDetails;
         }
     }
 }
