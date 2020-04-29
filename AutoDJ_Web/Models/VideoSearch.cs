@@ -4,16 +4,13 @@ using Google.Apis.YouTube.v3;
 using Microsoft.Extensions.Caching.Distributed;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 
 namespace AutoDJ_Web
 {
     public static class VideoSearch
     {
-
         public static List<VideoModel> Videos { get; set; }
         public static int ResultIndex { get; set; } = -1;
 
@@ -33,7 +30,7 @@ namespace AutoDJ_Web
 
             var searchListRequest = youtubeService.Search.List("id");
             searchListRequest.Q = searchTerm;
-            searchListRequest.MaxResults = 3;
+            searchListRequest.MaxResults = 5;
             searchListRequest.Type = "video";
             searchListRequest.VideoCategoryId = "10";
 

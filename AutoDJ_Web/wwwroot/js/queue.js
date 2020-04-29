@@ -13,6 +13,7 @@
 
                     console.log(queueItem);
                     $("#queueEmpty").hide();
+                    document.getElementById("playButton").disabled = false;
 
                     var queueContainer = document.getElementById("queueContainer");
                     var itemContainer = document.createElement("div");
@@ -24,6 +25,7 @@
                     $("#queueContainer").show();
 
                     cancelSearch();
+                    setQueueDuration();
                 }
             });
         }
@@ -54,11 +56,10 @@ function remove(id) {
         success: function () {
 
             $("#item" + id).remove();
-
-            if ($("#queueContainer").children().length == 0)
-                $("#queueEmpty").show();
-            else
+            setQueueDuration();
+            if (!checkQueueEmpty())
                 updateOrder();
+            
         }
     });
 }
@@ -82,5 +83,49 @@ function updateOrder() {
             }
         }
     });
+}
+
+function popFromQueue() {
+
+    var queue = $("#queueContainer").children();
+    if (queue.length > 0) {
+        for (i = 0; i < queue.length; i++) {
+            if (queue[i].style.order == 0) {
+                queue[i].remove();
+                updateOrder();
+                break;
+            }
+        }
+    }
+}
+
+function checkQueueEmpty() {
+
+    if ($("#queueContainer").children().length == 0) {
+        $("#queueEmpty").show();
+        if (document.getElementById('player').tagName == "DIV") {
+            document.getElementById('playButton').disabled = true;
+            $(".button.play").toggleClass('paused');
+        }
+        return true;
+    }
+    else
+        return false;
+}
+
+function setQueueDuration() {
+
+    if ($("#queueContainer").children().length != 0) {
+        $.ajax({
+            url: "/Queue/?Handler=Duration",
+            type: "GET",
+            success: function (duration) {
+                document.getElementById("queueTime").textContent = duration;
+            }
+        });
+    }
+    else
+        document.getElementById("queueTime").textContent = "";
+
 }
 

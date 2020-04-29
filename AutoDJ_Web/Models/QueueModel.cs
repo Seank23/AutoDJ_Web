@@ -30,5 +30,21 @@ namespace AutoDJ_Web.Models
 
             return orderList;
         }
+
+        public static void PopFromQueue()
+        {
+            Queue.RemoveAt(0);
+        }
+
+        public static int GetDurationSeconds()
+        {
+            int duration = 0;
+            foreach(QueueItemModel item in Queue)
+            {
+                string[] minsecs = item.Video.Duration.Split(":");
+                duration += (int.Parse(minsecs[0]) * 60) + int.Parse(minsecs[1]);
+            }
+            return duration;
+        }
     }
 }

@@ -25,5 +25,20 @@ namespace AutoDJ_Web.Pages
             Models.QueueModel.OrderQueue();
             return new JsonResult(Models.QueueModel.GetOrderList());
         }
+
+        public JsonResult OnGetDuration()
+        {
+            int duration = Models.QueueModel.GetDurationSeconds();
+            int hrs = (int)Math.Floor((double)duration / 3600);
+            int mins = (int)Math.Floor(((double)duration / 60) % 60);
+            int secs = duration % 60;
+
+            if (hrs != 0)
+                return new JsonResult(hrs + " hrs " + mins + " mins " + secs + " secs");
+            else if(mins != 0)
+                return new JsonResult(mins + " mins " + secs + " secs");
+            else
+                return new JsonResult(secs + " secs");
+        }
     }
 }

@@ -31,6 +31,12 @@ namespace AutoDJ_Web
                 var path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"cache.db");
                 options.CachePath = path;
             });
+
+            services.AddWebOptimizer(pipeline =>
+            {
+                pipeline.CompileScssFiles();
+            });
+
             services.AddRazorPages();
         }
 
@@ -47,6 +53,8 @@ namespace AutoDJ_Web
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+
+            app.UseWebOptimizer();
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
