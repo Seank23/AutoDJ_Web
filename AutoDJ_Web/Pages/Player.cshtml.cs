@@ -30,6 +30,11 @@ namespace AutoDJ_Web.Pages
             return null;
         }
 
+        public JsonResult OnGetStop()
+        {
+            return DisposePlayer();
+        }
+
         public JsonResult OnGetNextSong()
         {
             if (Models.QueueModel.Queue.Count > 0)
@@ -42,10 +47,15 @@ namespace AutoDJ_Web.Pages
             }
             else
             {
-                Models.PlayerModel.VideoId = null;
-                Models.PlayerModel.VideoName = null;
-                return new JsonResult("empty");
+                return DisposePlayer();
             }
+        }
+
+        public JsonResult DisposePlayer()
+        {
+            Models.PlayerModel.VideoId = null;
+            Models.PlayerModel.VideoName = null;
+            return new JsonResult("empty");
         }
     }
 }

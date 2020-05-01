@@ -14,6 +14,8 @@
                     console.log(queueItem);
                     $("#queueEmpty").hide();
                     document.getElementById("playButton").disabled = false;
+                    if(player != null)
+                        document.getElementById("skipButton").disabled = false;
 
                     var queueContainer = document.getElementById("queueContainer");
                     var itemContainer = document.createElement("div");
@@ -103,9 +105,12 @@ function checkQueueEmpty() {
 
     if ($("#queueContainer").children().length == 0) {
         $("#queueEmpty").show();
+        document.getElementById("skipButton").disabled = true;
+
         if (document.getElementById('player').tagName == "DIV") {
             document.getElementById('playButton').disabled = true;
-            $(".button.play").toggleClass('paused');
+            document.getElementById('stopButton').disabled = true;
+            $(".button.play").removeClass('pause');
         }
         return true;
     }
