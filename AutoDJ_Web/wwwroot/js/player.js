@@ -36,12 +36,12 @@ function playNextSong() {
                 popFromQueue();
                 document.getElementById("videoTitle").textContent = result[0];
                 player.loadVideoById(result[1])
-                checkQueueEmpty();
+                checkQueueEmpty(false);
                 setQueueDuration();
             }
             else {
+                checkQueueEmpty(true);
                 disposePlayer();
-                checkQueueEmpty();
             }
         }
     });
@@ -64,8 +64,6 @@ function startPlayer(video) {
     popFromQueue();
     document.getElementById("videoTitle").textContent = video[0];
     initPlayer(video[1])
-    checkQueueEmpty();
-    setQueueDuration();
 }
 
 function initPlayer(video) {
@@ -76,17 +74,19 @@ function initPlayer(video) {
         events: { "onReady": onPlayerReady, "onStateChange": onPlayerStateChange }
     });
     $('#player').attr("style", "width: 100%; height: 350px;");
-    $("#playerCard").show();
+    $("#playerCard").fadeIn(500);
 }
 
 function disposePlayer() {
 
     player.pauseVideo();
-    $("#playerCard").hide();
-    $("#player").remove();
-    player = null;
-    var playerDiv = document.createElement("DIV");
-    playerDiv.id = "player";
-    $("#playerContainer").append(playerDiv);
-    document.getElementById("videoTitle").textContent = "";
+    $("#playerCard").fadeOut(500, function () {
+        $("#player").remove();
+        player = null;
+        var playerDiv = document.createElement("DIV");
+        playerDiv.id = "player";
+        $("#playerContainer").append(playerDiv);
+        document.getElementById("videoTitle").textContent = "";
+    });
+    
 }

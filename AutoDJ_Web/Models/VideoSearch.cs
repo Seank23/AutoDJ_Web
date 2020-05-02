@@ -54,7 +54,7 @@ namespace AutoDJ_Web
                 videoDetails.Add(resultArray);
             }
 
-            var options = new DistributedCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromDays(1));
+            var options = new DistributedCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromDays(7));
             cache.SetString(searchTerm, VideoDetailsToString(videoDetails), options);
             PopulateVideoModel(videoDetails);
         }

@@ -34,8 +34,6 @@ function playClicked() {
                 document.getElementById("stopButton").disabled = false;
                 document.getElementById("skipButton").disabled = false;
                 startPlayer(result);
-                checkQueueEmpty();
-                
             }
         }
     });
@@ -51,8 +49,8 @@ function stopClicked() {
             $(".button.play").removeClass('pause');
             document.getElementById("stopButton").disabled = true;
             document.getElementById("skipButton").disabled = true;
+            checkQueueEmpty(true);
             disposePlayer();
-            checkQueueEmpty();
         }
     });
 }
@@ -60,5 +58,4 @@ function stopClicked() {
 function skipClicked() {
 
     playNextSong();
-    checkQueueEmpty();
 }

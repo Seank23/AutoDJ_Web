@@ -84,3 +84,21 @@ body {
     white-space: nowrap;
     text-align: center;
 }
+
+.queueItem {
+    display: none;
+    position: absolute;
+    max-height: 70px;
+    left: 20px;
+    right: 20px;
+}
+
+.search-body {
+    max-height: 150px;
+    overflow: hidden;
+    transition: all .3s ease;
+}
+
+.search-body.expand {
+    max-height: 500px;
+}

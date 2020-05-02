@@ -1,4 +1,8 @@
-﻿function addToQueue() {
+﻿const topPos = 110
+var curHeight = 0;
+var curTop = topPos;
+
+function addToQueue() {
 
     $.ajax({
         url: "/Search/?Handler=ResultId",
@@ -21,13 +25,18 @@
                     var itemContainer = document.createElement("div");
                     var itemId = "item" + queueItem['id'];
                     itemContainer.id = itemId
-                    itemContainer.style = "max-height: 70px; order: " + queueContainer.children.length + ";";
+                    itemContainer.classList.add("queueItem");
+                    itemContainer.style.top = curTop + "px";
                     queueContainer.appendChild(itemContainer);
                     $("#" + itemId).load("/QueueItemTemplate");
-                    $("#queueContainer").show();
-
+                    $(queueContainer).show();
                     cancelSearch();
                     setQueueDuration();
+
+                    $(itemContainer).fadeIn(500);
+                    $(queueContainer).animate({ "height": curHeight + 70 }, 200);
+                    curHeight += 70; 
+                    curTop += 70;
                 }
             });
         }
@@ -57,10 +66,13 @@ function remove(id) {
         data: { id: id },
         success: function () {
 
-            $("#item" + id).remove();
-            setQueueDuration();
-            if (!checkQueueEmpty())
-                updateOrder();
+            $("#item" + id).fadeOut(500, function () {
+                animateQueueMove();
+                $(this).remove();
+                setQueueDuration();
+                if (!checkQueueEmpty(false))
+                    updateOrder();
+            }); 
             
         }
     });
@@ -80,8 +92,10 @@ function updateOrder() {
                 orderDict[orderList[i]] = i;
 
             for (i = 0; i < items.length; i++) {
-                var id = items[i].id.substring(4, items[i].id.length);
-                items[i].style.order = orderDict[id];
+                var myItem = items[i];
+                var id = myItem.id.substring(4, items[i].id.length);
+
+                $(myItem).animate({ "top": topPos + orderDict[id] * 70 }, 200);
             }
         }
     });
@@ -92,22 +106,27 @@ function popFromQueue() {
     var queue = $("#queueContainer").children();
     if (queue.length > 0) {
         for (i = 0; i < queue.length; i++) {
-            if (queue[i].style.order == 0) {
-                queue[i].remove();
-                updateOrder();
+            if (queue[i].style.top == topPos + "px") {
+                $(queue[i]).fadeOut(500, function () {
+                    animateQueueMove();
+                    $(this).remove();
+                    updateOrder();
+                    checkQueueEmpty(false);
+                    setQueueDuration();
+                });
                 break;
             }
         }
     }
 }
 
-function checkQueueEmpty() {
+function checkQueueEmpty(onStop) {
 
     if ($("#queueContainer").children().length == 0) {
         $("#queueEmpty").show();
         document.getElementById("skipButton").disabled = true;
 
-        if (document.getElementById('player').tagName == "DIV") {
+        if (document.getElementById('player').tagName == "DIV" || onStop == true) {
             document.getElementById('playButton').disabled = true;
             document.getElementById('stopButton').disabled = true;
             $(".button.play").removeClass('pause');
@@ -131,6 +150,11 @@ function setQueueDuration() {
     }
     else
         document.getElementById("queueTime").textContent = "";
+}
 
+function animateQueueMove() {
+
+    $(queueContainer).animate({ "height": curHeight - 70 }, 200);
+    curHeight -= 70;
 }
 

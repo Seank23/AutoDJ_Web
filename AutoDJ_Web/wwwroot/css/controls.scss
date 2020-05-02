@@ -1,5 +1,6 @@
 ﻿$primary-color: #337ab7;
 $muted-color: #C0C0C0;
+$default-size: 30px;
 
 .button.play {
     position: relative;
@@ -8,18 +9,18 @@ $muted-color: #C0C0C0;
     background: transparent;
     box-sizing: border-box;
     width: 0;
-    height: 30px;
+    height: $default-size;
     transition: 100ms all ease;
     cursor: pointer;
     top: -14px;
     // play state
     border-style: solid;
-    border-width: 15px 0px 15px 30px;
+    border-width: $default-size / 2 0px $default-size / 2 $default-size;
     border-color: transparent transparent transparent $primary-color;
 
     &.pause {
         border-style: double;
-        border-width: 0px 0px 0px 30px;
+        border-width: 0px 0px 0px $default-size;
         top: -1px;
         margin-bottom: 15px;
     }
@@ -38,12 +39,13 @@ $muted-color: #C0C0C0;
 }
 
 .button.stop {
+    transition: 100ms all ease;
     display: inline-block;
     background-color: #dc3545;
     border: none;
     border-radius: 4px;
-    height: 32px;
-    width: 32px;
+    height: $default-size + 2;
+    width: $default-size + 2;
     cursor: pointer;
     margin-right: 5px;
 
@@ -61,10 +63,11 @@ $muted-color: #C0C0C0;
 }
 
 .button.skip {
+    transition: 100ms all ease;
     background: url('../images/skip.png') no-repeat;
     cursor: pointer;
     border: none;
-    width: 47px;
+    width: 48px;
     height: 32px;
     margin: 0 5px 0 5px;
 
@@ -123,6 +126,7 @@ $muted-color: #C0C0C0;
     }
 
     .ui-slider-handle {
+        transition: 100ms all ease;
         width: 20px;
         height: 20px;
         border-radius: 20px;
@@ -132,5 +136,11 @@ $muted-color: #C0C0C0;
         margin-top: -8px;
         cursor: pointer;
         outline: none;
+
+        &:hover {
+            width: 22px;
+            height: 22px;
+            background-color: $primary-color;
+        }
     }
 }

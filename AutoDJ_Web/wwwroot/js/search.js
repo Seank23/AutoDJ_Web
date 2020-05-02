@@ -35,7 +35,8 @@ function search() {
     document.getElementById("cancel").disabled = false;
     var term = document.getElementById("searchText").value;
 
-    $("#roller").show();
+    document.querySelector('.search-body').classList.toggle('expand');
+    $("#roller").fadeIn(50);
     document.getElementById("searchBtn").disabled = true;
     $.ajax({
         url: "/Search/?Handler=Search",
@@ -43,15 +44,15 @@ function search() {
         data: { searchTerm: term },
         success: function (result) {
             if (result == 1) {
-                $("#details").show();
+                $("#details").fadeIn(100);
                 updateResult(true);
             }
             else if(result == 0)
-                $("#noResults").show();
+                $("#noResults").fadeIn(100);
             else
-                $("#error").show();
+                $("#error").fadeIn(100);
 
-            $("#roller").hide();
+            $("#roller").fadeOut(50);
         }
     });
 }
@@ -62,10 +63,11 @@ function cancelSearch() {
         url: "/Search/?Handler=Cancel",
         type: "GET",
         success: function () {
-            $("#details").hide();
-            $("#noResults").hide();
-            $("#error").hide();
-            $("#roller").hide();
+            $("#details").fadeOut(100);
+            $("#noResults").fadeOut(100);
+            $("#error").fadeOut(100);
+            $("#roller").fadeOut(100);
+            document.querySelector('.search-body').classList.toggle('expand');
             document.getElementById("searchBtn").disabled = false;
             document.getElementById("cancel").disabled = true;
             document.getElementById("searchText").value = "";
