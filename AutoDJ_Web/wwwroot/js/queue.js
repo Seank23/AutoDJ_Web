@@ -105,18 +105,22 @@ function popFromQueue() {
 
     var queue = $("#queueContainer").children();
     if (queue.length > 0) {
-        for (i = 0; i < queue.length; i++) {
-            if (queue[i].style.top == topPos + "px") {
-                $(queue[i]).fadeOut(500, function () {
-                    animateQueueMove();
-                    $(this).remove();
-                    updateOrder();
-                    checkQueueEmpty(false);
-                    setQueueDuration();
-                });
-                break;
+
+        minVal = queue[0].style.top;
+        minIndex = 0;
+        for (i = 1; i < queue.length; i++) {
+            if (queue[i].style.top < minVal) {
+                minVal = queue[i].style.top;
+                minIndex = i;
             }
         }
+        $(queue[minIndex]).fadeOut(500, function () {
+            animateQueueMove();
+            $(this).remove();
+            updateOrder();
+            checkQueueEmpty(false);
+            setQueueDuration();
+        });
     }
 }
 
@@ -145,16 +149,24 @@ function setQueueDuration() {
             type: "GET",
             success: function (duration) {
                 document.getElementById("queueTime").textContent = duration;
+
+                if ($("#queueContainer").children().length == 1)
+                    document.getElementById("songCount").textContent = $("#queueContainer").children().length + " song - ";
+                else
+                    document.getElementById("songCount").textContent = $("#queueContainer").children().length + " songs - ";
             }
         });
     }
-    else
+    else {
         document.getElementById("queueTime").textContent = "";
+        document.getElementById("songCount").textContent = "";
+    }
 }
 
 function animateQueueMove() {
 
     $(queueContainer).animate({ "height": curHeight - 70 }, 200);
     curHeight -= 70;
+    curTop -= 70;
 }
 

@@ -4,11 +4,13 @@ var firstScriptTag = document.getElementsByTagName('script')[0];
 firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 var player = null
 var initVolume = 10;
+var timebarTimer = null
 
 function onPlayerReady(event) {
 
     player.setVolume(initVolume);
     event.target.playVideo();
+    timebarTimer = setInterval(checkPlayerTime, 1000);
 }
 
 function onPlayerStateChange(event) {
@@ -38,6 +40,8 @@ function playNextSong() {
                 player.loadVideoById(result[1])
                 checkQueueEmpty(false);
                 setQueueDuration();
+                $("#timelineBar").css("width", 0);
+                $("#timelineTime").html("0:00");
             }
             else {
                 checkQueueEmpty(true);
@@ -70,7 +74,7 @@ function initPlayer(video) {
 
     player = new YT.Player('player', {
         videoId: video,
-        playerVars: { "disablekb": 1, "fs": 0, "rel": 0, "modestbranding": 1 },
+        playerVars: { "disablekb": 1, "fs": 0, "rel": 0, "modestbranding": 1, "enablejsapi": 1 },
         events: { "onReady": onPlayerReady, "onStateChange": onPlayerStateChange }
     });
     $('#player').attr("style", "width: 100%; height: 350px;");
@@ -80,6 +84,7 @@ function initPlayer(video) {
 function disposePlayer() {
 
     player.pauseVideo();
+    clearInterval(timebarTimer);
     $("#playerCard").fadeOut(500, function () {
         $("#player").remove();
         player = null;
@@ -87,6 +92,29 @@ function disposePlayer() {
         playerDiv.id = "player";
         $("#playerContainer").append(playerDiv);
         document.getElementById("videoTitle").textContent = "";
+        $("#timelineBar").css("width", 0);
+        $("#timelineTime").html("0:00");
+        $("#videoDuration").html("0:00");
     });
     
+}
+
+function checkPlayerTime() {
+
+    if (player.getPlayerState() == 1) {
+
+        var time = player.getCurrentTime();
+        var duration = player.getDuration();
+        var percentComplete = (time / duration) * 100;
+        $("#timelineBar").css("width", percentComplete + "%");
+        $("#timelineTime").html(intToTime(Math.round(time)));
+        $("#videoDuration").html(intToTime(Math.round(player.getDuration())));
+    }
+}
+
+function intToTime(seconds) {
+    if (seconds % 60 < 10)
+        return Math.floor(seconds / 60) + ":0" + (seconds % 60);
+    else
+        return Math.floor(seconds / 60) + ":" + (seconds % 60);
 }

@@ -78,8 +78,18 @@
                     <div class="card-header">
                         <h4><span id="playState">Now Playing...</span><br /><small><span id="videoTitle"></span></small></h4>
                     </div>
-                    <div class="card-body justify-content-center" id="playerContainer">
-                        <div id="player"></div>
+                    <div class="card-body justify-content-center">
+                        <div id="playerContainer">
+                            <div id="player"></div>
+                        </div>
+                        
+                        <div class="row">
+                            <div id="timeline" class="progress col-11">
+                                <div id="timelineBar" class="progress-bar" width="0"></div>
+                                <span id="timelineTime" class="ml-1">0:00</span>
+                            </div>
+                            <span id="videoDuration" class="col-1" style="font-size: 11px; position: absolute; right: 0; overflow-wrap: normal">0:00</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -109,7 +119,7 @@
         <div class="card shadow" style="min-width: 375px">
             <div class="card-header">
                 <div>
-                    <h4>Song Queue<br /><small><span id="queueTime"></span></small></h4>
+                    <h4>Song Queue<br /><small><span id="songCount"></span><span id="queueTime"></span></small></h4>
                     
                 </div>
             </div>
