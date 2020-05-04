@@ -10,7 +10,7 @@ function onPlayerReady(event) {
 
     player.setVolume(initVolume);
     event.target.playVideo();
-    timebarTimer = setInterval(checkPlayerTime, 1000);
+    timebarTimer = setInterval(checkPlayerTime, 500);
 }
 
 function onPlayerStateChange(event) {
@@ -41,6 +41,7 @@ function playNextSong() {
                 checkQueueEmpty(false);
                 setQueueDuration();
                 $("#timelineBar").css("width", 0);
+                $("#timelineBar").attr("aria-valuenow", 0);
                 $("#timelineTime").html("0:00");
             }
             else {
@@ -94,7 +95,6 @@ function disposePlayer() {
         document.getElementById("videoTitle").textContent = "";
         $("#timelineBar").css("width", 0);
         $("#timelineTime").html("0:00");
-        $("#videoDuration").html("0:00");
     });
     
 }
@@ -107,8 +107,8 @@ function checkPlayerTime() {
         var duration = player.getDuration();
         var percentComplete = (time / duration) * 100;
         $("#timelineBar").css("width", percentComplete + "%");
+        $("#timelineBar").attr("aria-valuenow", percentComplete);
         $("#timelineTime").html(intToTime(Math.round(time)));
-        $("#videoDuration").html(intToTime(Math.round(player.getDuration())));
     }
 }
 
