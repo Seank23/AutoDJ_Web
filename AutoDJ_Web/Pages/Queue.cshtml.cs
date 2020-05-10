@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoDJ_Web.Data;
 using AutoDJ_Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -11,11 +12,19 @@ namespace AutoDJ_Web.Pages
 {
     public class QueueModel : PageModel
     {
+        protected DBHandler dbHandler;
+
+        public QueueModel(ApplicationDbContext context)
+        {
+            dbHandler = new DBHandler(context);
+        }
+
         public JsonResult OnGetAdd(string id)
         {
             VideoModel vidToAdd = VideoSearch.Videos[int.Parse(id)];
             QueueItemModel queueItem = new QueueItemModel(vidToAdd);
             Models.QueueModel.Queue.Add(queueItem);
+            dbHandler.WriteVideo(queueItem);
 
             return new JsonResult(queueItem);
         }

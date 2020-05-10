@@ -11,7 +11,7 @@ namespace AutoDJ_Web.Models
         public string VideoId { get; set; }
         public string Name { get; set; }
         public string Channel { get; set; }
-        public string PublishedTime { get; set; }
+        public string PublishedDate { get; set; }
         public string Duration { get; set; }
         public string Thumbnail { get; set; }
 
@@ -20,7 +20,7 @@ namespace AutoDJ_Web.Models
             VideoId = id;
             Name = name;
             Channel = channel;
-            PublishedTime = published;
+            PublishedDate = published;
             Duration = DurationToTime(duration);
             Thumbnail = thumbnail;
         }
@@ -54,7 +54,7 @@ namespace AutoDJ_Web.Models
         }
         public string[] ToStringArray()
         {
-            return new string[]{ (VideoSearch.ResultIndex + 1).ToString(), VideoSearch.Videos.Count.ToString(), VideoId, Name, Channel, PublishedTime, Duration, Thumbnail };
+            return new string[]{ (VideoSearch.ResultIndex + 1).ToString(), VideoSearch.Videos.Count.ToString(), VideoId, Name, Channel, PublishedDate, Duration, Thumbnail };
         }
     }
 }

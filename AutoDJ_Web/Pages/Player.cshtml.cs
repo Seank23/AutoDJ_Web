@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoDJ_Web.Data;
 using AutoDJ_Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -10,6 +11,13 @@ namespace AutoDJ_Web.Pages
 {
     public class PlayerModel : PageModel
     {
+        protected DBHandler dbHandler;
+
+        public PlayerModel(ApplicationDbContext context)
+        {
+            dbHandler = new DBHandler(context);
+        }
+
         public JsonResult OnGetPlay()
         {
             if(Models.PlayerModel.VideoId == null)
@@ -43,6 +51,7 @@ namespace AutoDJ_Web.Pages
                 Models.QueueModel.PopFromQueue();
                 Models.PlayerModel.VideoId = next.Video.VideoId;
                 Models.PlayerModel.VideoName = next.Video.Name;
+                dbHandler.DeleteVideo(next);
                 return new JsonResult(Models.PlayerModel.GetVideoDetails());
             }
             else
