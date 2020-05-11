@@ -14,7 +14,7 @@ function setVolume(myVolume) {
     setPlayerVolume(myVolume);
 }
 
-playerHub.on("Play", (result) => {
+appHub.on("Play", (result) => {
 
     if (result == "paused") {
         $(".button.play").removeClass("pause");
@@ -32,7 +32,7 @@ playerHub.on("Play", (result) => {
     }
 });
 
-playerHub.on("Stop", () => {
+appHub.on("Stop", () => {
 
     $(".button.play").removeClass('pause');
     document.getElementById("stopButton").disabled = true;
@@ -43,14 +43,14 @@ playerHub.on("Stop", () => {
 
 function playClicked() {
 
-    playerHub.invoke("Play").catch(function (err) {
+    appHub.invoke("Play").catch(function (err) {
         return console.error(err.toString());
     });
 }
 
 function stopClicked() {
 
-    playerHub.invoke("Stop").catch(function (err) {
+    appHub.invoke("Stop").catch(function (err) {
         return console.error(err.toString());
     });
 }

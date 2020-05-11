@@ -2,11 +2,11 @@
 var curHeight = 0;
 var curTop = topPos;
 
-var queueHub = new signalR.HubConnectionBuilder().withUrl("/queueHub").build();
+//var queueHub = new signalR.HubConnectionBuilder().withUrl("/queueHub").build();
 
-queueHub.start().catch(err => console.error(err.toString()));
+//queueHub.start().catch(err => console.error(err.toString()));
 
-queueHub.on("AddToQueue", (queueItem) => {
+appHub.on("AddToQueue", (queueItem) => {
 
     console.log(queueItem);
     $("#queueEmpty").hide();
@@ -32,7 +32,7 @@ queueHub.on("AddToQueue", (queueItem) => {
     curTop += 70;
 });
 
-queueHub.on("UpdateOrder", (orderList) => {
+appHub.on("UpdateOrder", (orderList) => {
 
     var items = $("#queueContainer").children();
     var orderDict = {};
@@ -48,7 +48,7 @@ queueHub.on("UpdateOrder", (orderList) => {
     }
 });
 
-queueHub.on("SetQueueDuration", (duration) => {
+appHub.on("SetQueueDuration", (duration) => {
 
     document.getElementById("queueTime").textContent = duration;
 
@@ -58,14 +58,14 @@ queueHub.on("SetQueueDuration", (duration) => {
         document.getElementById("songCount").textContent = $("#queueContainer").children().length + " songs - ";
 });
 
-queueHub.on("SetRating", (rating, id) => {
+appHub.on("SetRating", (rating, id) => {
 
     console.log(rating);
     document.getElementById("addVote_" + id).textContent = "Vote (" + rating + ")";
     updateOrder();
 });
 
-queueHub.on("RemoveItem", (id) => {
+appHub.on("RemoveItem", (id) => {
 
     $("#item" + id).fadeOut(500, function () {
         animateQueueMove();
@@ -78,14 +78,14 @@ queueHub.on("RemoveItem", (id) => {
 
 function addToQueue(result) {
 
-    queueHub.invoke("Add", result).catch(function (err) {
+    appHub.invoke("Add", result).catch(function (err) {
         return console.error(err.toString());
     });
 }
 
 function updateOrder() {
 
-    queueHub.invoke("Order").catch(function (err) {
+    appHub.invoke("Order").catch(function (err) {
         return console.error(err.toString());
     });
 }
@@ -94,7 +94,7 @@ function setQueueDuration() {
 
     if ($("#queueContainer").children().length != 0) {
 
-        queueHub.invoke("Duration").catch(function (err) {
+        appHub.invoke("Duration").catch(function (err) {
             return console.error(err.toString());
         });
     }
@@ -106,14 +106,14 @@ function setQueueDuration() {
 
 function addVote(id) {
 
-    queueHub.invoke("AddVote", id).catch(function (err) {
+    appHub.invoke("AddVote", id).catch(function (err) {
         return console.error(err.toString());
     });
 }
 
 function remove(id) {
 
-    queueHub.invoke("Remove", id).catch(function (err) {
+    appHub.invoke("Remove", id).catch(function (err) {
         return console.error(err.toString());
     });
 }

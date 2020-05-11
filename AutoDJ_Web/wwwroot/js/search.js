@@ -1,14 +1,15 @@
-﻿var searchHub = new signalR.HubConnectionBuilder().withUrl("/searchHub").build();
+﻿//var searchHub = new signalR.HubConnectionBuilder().withUrl("/searchHub").build();
+var appHub = new signalR.HubConnectionBuilder().withUrl("/appHub").build();
 
 document.getElementById("searchBtn").disabled = true;
 
-searchHub.start().then(function () {
+appHub.start().then(function () {
     document.getElementById("searchBtn").disabled = false;
 }).catch(function (err) {
     return console.error(err.toString());
 });
 
-searchHub.on("Search", (status) => {
+appHub.on("Search", (status) => {
 
     if (status == 1) {
         $("#details").fadeIn(100);
@@ -22,7 +23,7 @@ searchHub.on("Search", (status) => {
     $("#roller").fadeOut(50);
 });
 
-searchHub.on("UpdateResult", (result) => {
+appHub.on("UpdateResult", (result) => {
 
     if (result != null) {
         document.getElementById("resultIndex").textContent = result[0];
@@ -43,12 +44,12 @@ searchHub.on("UpdateResult", (result) => {
     }
 });
 
-searchHub.on("Cancel", () => {
+appHub.on("Cancel", () => {
 
     cancelSearch();
 });
 
-searchHub.on("ResultToAdd", (result) => {
+appHub.on("ResultToAdd", (result) => {
 
     addToQueue(result[0]);
 });
@@ -67,7 +68,7 @@ function cancelSearch() {
 
 function updateResult(next) {
 
-    searchHub.invoke("UpdateResult", next).catch(function (err) {
+    appHub.invoke("UpdateResult", next).catch(function (err) {
         return console.error(err.toString());
     });
 }
@@ -81,7 +82,7 @@ function onSearch() {
     $("#roller").fadeIn(50);
     document.getElementById("searchBtn").disabled = true;
 
-    searchHub.invoke("Search", term).catch(function (err) {
+    appHub.invoke("Search", term).catch(function (err) {
         return console.error(err.toString());
     });
 }
@@ -89,14 +90,14 @@ function onSearch() {
 
 function onCancelSearch() {
 
-    searchHub.invoke("Cancel").catch(function (err) {
+    appHub.invoke("Cancel").catch(function (err) {
         return console.error(err.toString());
     });
 }
 
 function onAddToQueue() {
 
-    searchHub.invoke("ResultId").catch(function (err) {
+    appHub.invoke("ResultId").catch(function (err) {
         return console.error(err.toString());
     });
 }

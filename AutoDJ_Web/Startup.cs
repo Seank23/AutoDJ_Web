@@ -45,7 +45,7 @@ namespace AutoDJ_Web
             });
 
             services.AddRazorPages();
-            services.AddSignalR();
+            services.AddSignalR().AddAzureSignalR("Endpoint=https://autodjwebservice.service.signalr.net;AccessKey=V7wBQUDMcAyhgSN6zsNr15QD1Ecnx72p8a+JBXHeFzo=;Version=1.0;");
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -76,9 +76,14 @@ namespace AutoDJ_Web
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorPages();
-                endpoints.MapHub<SearchHub>("/searchHub");
-                endpoints.MapHub<QueueHub>("/queueHub");
-                endpoints.MapHub<PlayerHub>("/playerHub");
+            });
+
+            app.UseAzureSignalR(routes =>
+            {
+                routes.MapHub<AppHub>("/appHub");
+                //routes.MapHub<SearchHub>("/searchHub");
+                //routes.MapHub<QueueHub>("/queueHub");
+                //routes.MapHub<PlayerHub>("/playerHub");
             });
         }
     }

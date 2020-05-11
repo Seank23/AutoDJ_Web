@@ -6,11 +6,11 @@ var player = null
 var initVolume = 10;
 var timebarTimer = null
 
-var playerHub = new signalR.HubConnectionBuilder().withUrl("/playerHub").build();
+//var playerHub = new signalR.HubConnectionBuilder().withUrl("/playerHub").build();
 
-playerHub.start().catch(err => console.error(err.toString()));
+//playerHub.start().catch(err => console.error(err.toString()));
 
-playerHub.on("NextSong", (result) => {
+appHub.on("NextSong", (result) => {
 
     if (result != "empty") {
         popFromQueue();
@@ -30,7 +30,7 @@ playerHub.on("NextSong", (result) => {
 
 function playNextSong() {
 
-    playerHub.invoke("NextSong", false).catch(function (err) {
+    appHub.invoke("NextSong", false).catch(function (err) {
         return console.error(err.toString());
     });
 }

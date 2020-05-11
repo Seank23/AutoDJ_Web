@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UserSecretsId>16ccfb5b-f32d-4c3e-ba66-e613efa58ab4</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -9,6 +10,7 @@
     <PackageReference Include="Google.Apis.YouTube.v3" Version="1.45.0.1929" />
     <PackageReference Include="LigerShark.WebOptimizer.Core" Version="3.0.250" />
     <PackageReference Include="LigerShark.WebOptimizer.Sass" Version="3.0.40-beta" />
+    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.1.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.3" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.2" />
