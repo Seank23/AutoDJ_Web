@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using AutoDJ_Web.Data;
+using AutoDJ_Web.Hubs;
 using AutoDJ_Web.IoC;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -44,6 +45,7 @@ namespace AutoDJ_Web
             });
 
             services.AddRazorPages();
+            services.AddSignalR();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -74,6 +76,9 @@ namespace AutoDJ_Web
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorPages();
+                endpoints.MapHub<SearchHub>("/searchHub");
+                endpoints.MapHub<QueueHub>("/queueHub");
+                endpoints.MapHub<PlayerHub>("/playerHub");
             });
         }
     }

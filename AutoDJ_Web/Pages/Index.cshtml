@@ -4,10 +4,14 @@
     ViewData["Title"] = "Home page";
 }
 
-<script type="text/javascript" src="js/search.js"></script>
-<script type="text/javascript" src="js/queue.js"></script>
-<script type="text/javascript" src="js/player.js"></script>
-<script type="text/javascript" src="js/controls.js"></script>
+@section scripts
+{
+    <script src="~/lib/signalr/dist/browser/signalr.js"></script>
+    <script type="text/javascript" src="js/search.js"></script>
+    <script type="text/javascript" src="js/queue.js"></script>
+    <script type="text/javascript" src="js/player.js"></script>
+    <script type="text/javascript" src="js/controls.js"></script>
+}
 
 <div class="row justify-content-between">
     <div class="col-xl-5 col-lg-7 col-md-9">
@@ -24,8 +28,8 @@
                                 <input type="text" class="form-control" id="searchText" placeholder="Search" style="width: 100%;">
                             </div>
                             <div class="float-right mt-1 mb-1">
-                                <button type="button" class="btn btn-primary mr-1" id="searchBtn" onclick="search()">Search</button>
-                                <button type="button" class="btn btn-danger" id="cancel" onclick="cancelSearch()" disabled>Cancel</button>
+                                <button type="button" class="btn btn-primary mr-1" id="searchBtn" onclick="onSearch()">Search</button>
+                                <button type="button" class="btn btn-danger" id="cancel" onclick="onCancelSearch()" disabled>Cancel</button>
                             </div>
                         </form>
 
@@ -55,7 +59,7 @@
                                 </div>
 
                                 <div class="float-right m-1">
-                                    <button type="button" class="btn btn-primary" id="addToQueue" onclick="addToQueue()">Add To Queue</button>
+                                    <button type="button" class="btn btn-primary" id="addToQueue" onclick="onAddToQueue()">Add To Queue</button>
                                 </div>
                             </div>
                         </div>
@@ -82,7 +86,7 @@
                         <div id="playerContainer">
                             <div id="player"></div>
                         </div>
-                        
+
                         <div class="">
                             <div id="timeline" class="progress">
                                 <div id="timelineBar" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
@@ -120,7 +124,7 @@
             <div class="card-header">
                 <div>
                     <h4>Song Queue<br /><small><span id="songCount"></span><span id="queueTime"></span></small></h4>
-                    
+
                 </div>
             </div>
             <div class="card-body">

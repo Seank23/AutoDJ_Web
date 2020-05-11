@@ -14,44 +14,44 @@ function setVolume(myVolume) {
     setPlayerVolume(myVolume);
 }
 
+playerHub.on("Play", (result) => {
+
+    if (result == "paused") {
+        $(".button.play").removeClass("pause");
+        pausePlayer();
+    }
+    else if (result == "playing") {
+        $(".button.play").addClass("pause");
+        playPlayer();
+    }
+    else {
+        $(".button.play").addClass("pause");
+        document.getElementById("stopButton").disabled = false;
+        document.getElementById("skipButton").disabled = false;
+        startPlayer(result);
+    }
+});
+
+playerHub.on("Stop", () => {
+
+    $(".button.play").removeClass('pause');
+    document.getElementById("stopButton").disabled = true;
+    document.getElementById("skipButton").disabled = true;
+    checkQueueEmpty(true);
+    disposePlayer();
+});
+
 function playClicked() {
 
-    $.ajax({
-        url: "/Player/?Handler=Play",
-        type: "GET",
-        success: function (result) {
-
-            if (result == "paused") {
-                $(".button.play").removeClass("pause");
-                pausePlayer();
-            }
-            else if (result == "playing") {
-                $(".button.play").addClass("pause");
-                playPlayer();
-            }
-            else {
-                $(".button.play").addClass("pause");
-                document.getElementById("stopButton").disabled = false;
-                document.getElementById("skipButton").disabled = false;
-                startPlayer(result);
-            }
-        }
+    playerHub.invoke("Play").catch(function (err) {
+        return console.error(err.toString());
     });
 }
 
 function stopClicked() {
 
-    $.ajax({
-        url: "/Player/?Handler=Stop",
-        type: "GET",
-        success: function () {
-
-            $(".button.play").removeClass('pause');
-            document.getElementById("stopButton").disabled = true;
-            document.getElementById("skipButton").disabled = true;
-            checkQueueEmpty(true);
-            disposePlayer();
-        }
+    playerHub.invoke("Stop").catch(function (err) {
+        return console.error(err.toString());
     });
 }
 

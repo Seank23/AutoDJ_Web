@@ -2,102 +2,119 @@
 var curHeight = 0;
 var curTop = topPos;
 
-function addToQueue() {
+var queueHub = new signalR.HubConnectionBuilder().withUrl("/queueHub").build();
 
-    $.ajax({
-        url: "/Search/?Handler=ResultId",
-        type: "GET",
-        success: function (id) {
+queueHub.start().catch(err => console.error(err.toString()));
 
-            $.ajax({
-                url: "/Queue/?Handler=Add",
-                type: "GET",
-                data: { id: id[0] },
-                success: function (queueItem) {
+queueHub.on("AddToQueue", (queueItem) => {
 
-                    console.log(queueItem);
-                    $("#queueEmpty").hide();
-                    document.getElementById("playButton").disabled = false;
-                    if(player != null)
-                        document.getElementById("skipButton").disabled = false;
+    console.log(queueItem);
+    $("#queueEmpty").hide();
+    document.getElementById("playButton").disabled = false;
+    if (player != null)
+        document.getElementById("skipButton").disabled = false;
 
-                    var queueContainer = document.getElementById("queueContainer");
-                    var itemContainer = document.createElement("div");
-                    var itemId = "item" + queueItem['id'];
-                    itemContainer.id = itemId
-                    itemContainer.classList.add("queueItem");
-                    itemContainer.style.top = curTop + "px";
-                    queueContainer.appendChild(itemContainer);
-                    $("#" + itemId).load("/QueueItemTemplate");
-                    $(queueContainer).show();
-                    cancelSearch();
-                    setQueueDuration();
+    var queueContainer = document.getElementById("queueContainer");
+    var itemContainer = document.createElement("div");
+    var itemId = "item" + queueItem['id'];
+    itemContainer.id = itemId
+    itemContainer.classList.add("queueItem");
+    itemContainer.style.top = curTop + "px";
+    queueContainer.appendChild(itemContainer);
+    $("#" + itemId).load("/QueueItemTemplate");
+    $(queueContainer).show();
+    cancelSearch();
+    setQueueDuration();
 
-                    $(itemContainer).fadeIn(500);
-                    $(queueContainer).animate({ "height": curHeight + 70 }, 200);
-                    curHeight += 70; 
-                    curTop += 70;
-                }
-            });
-        }
-    });
-}
+    $(itemContainer).fadeIn(500);
+    $(queueContainer).animate({ "height": curHeight + 70 }, 200);
+    curHeight += 70;
+    curTop += 70;
+});
 
-function addVote(id) {
+queueHub.on("UpdateOrder", (orderList) => {
 
-    $.ajax({
-        url: "/QueueItemTemplate/?Handler=AddVote",
-        type: "GET",
-        data: { id: id },
-        success: function (rating) {
+    var items = $("#queueContainer").children();
+    var orderDict = {};
 
-            console.log(rating);
-            document.getElementById("addVote_" + id).textContent = "Vote (" + rating + ")";
+    for (i = 0; i < orderList.length; i++)
+        orderDict[orderList[i]] = i;
+
+    for (i = 0; i < items.length; i++) {
+        var myItem = items[i];
+        var id = myItem.id.substring(4, items[i].id.length);
+
+        $(myItem).animate({ "top": topPos + orderDict[id] * 70 }, 200);
+    }
+});
+
+queueHub.on("SetQueueDuration", (duration) => {
+
+    document.getElementById("queueTime").textContent = duration;
+
+    if ($("#queueContainer").children().length == 1)
+        document.getElementById("songCount").textContent = $("#queueContainer").children().length + " song - ";
+    else
+        document.getElementById("songCount").textContent = $("#queueContainer").children().length + " songs - ";
+});
+
+queueHub.on("SetRating", (rating, id) => {
+
+    console.log(rating);
+    document.getElementById("addVote_" + id).textContent = "Vote (" + rating + ")";
+    updateOrder();
+});
+
+queueHub.on("RemoveItem", (id) => {
+
+    $("#item" + id).fadeOut(500, function () {
+        animateQueueMove();
+        $(this).remove();
+        setQueueDuration();
+        if (!checkQueueEmpty(false))
             updateOrder();
-        }
-    });
-}
+    }); 
+});
 
-function remove(id) {
+function addToQueue(result) {
 
-    $.ajax({
-        url: "/QueueItemTemplate/?Handler=Remove",
-        type: "GET",
-        data: { id: id },
-        success: function () {
-
-            $("#item" + id).fadeOut(500, function () {
-                animateQueueMove();
-                $(this).remove();
-                setQueueDuration();
-                if (!checkQueueEmpty(false))
-                    updateOrder();
-            }); 
-            
-        }
+    queueHub.invoke("Add", result).catch(function (err) {
+        return console.error(err.toString());
     });
 }
 
 function updateOrder() {
 
-    $.ajax({
-        url: "/Queue/?Handler=Order",
-        type: "GET",
-        success: function (orderList) {
+    queueHub.invoke("Order").catch(function (err) {
+        return console.error(err.toString());
+    });
+}
 
-            var items = $("#queueContainer").children();
-            var orderDict = {};
+function setQueueDuration() {
 
-            for (i = 0; i < orderList.length; i++)
-                orderDict[orderList[i]] = i;
+    if ($("#queueContainer").children().length != 0) {
 
-            for (i = 0; i < items.length; i++) {
-                var myItem = items[i];
-                var id = myItem.id.substring(4, items[i].id.length);
+        queueHub.invoke("Duration").catch(function (err) {
+            return console.error(err.toString());
+        });
+    }
+    else {
+        document.getElementById("queueTime").textContent = "";
+        document.getElementById("songCount").textContent = "";
+    }
+}
 
-                $(myItem).animate({ "top": topPos + orderDict[id] * 70 }, 200);
-            }
-        }
+function addVote(id) {
+
+    queueHub.invoke("AddVote", id).catch(function (err) {
+        return console.error(err.toString());
+    });
+}
+
+function remove(id) {
+
+    queueHub.invoke("Remove", id).catch(function (err) {
+        return console.error(err.toString());
     });
 }
 
@@ -139,28 +156,6 @@ function checkQueueEmpty(onStop) {
     }
     else
         return false;
-}
-
-function setQueueDuration() {
-
-    if ($("#queueContainer").children().length != 0) {
-        $.ajax({
-            url: "/Queue/?Handler=Duration",
-            type: "GET",
-            success: function (duration) {
-                document.getElementById("queueTime").textContent = duration;
-
-                if ($("#queueContainer").children().length == 1)
-                    document.getElementById("songCount").textContent = $("#queueContainer").children().length + " song - ";
-                else
-                    document.getElementById("songCount").textContent = $("#queueContainer").children().length + " songs - ";
-            }
-        });
-    }
-    else {
-        document.getElementById("queueTime").textContent = "";
-        document.getElementById("songCount").textContent = "";
-    }
 }
 
 function animateQueueMove() {

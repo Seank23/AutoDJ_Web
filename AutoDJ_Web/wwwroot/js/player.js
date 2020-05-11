@@ -6,6 +6,35 @@ var player = null
 var initVolume = 10;
 var timebarTimer = null
 
+var playerHub = new signalR.HubConnectionBuilder().withUrl("/playerHub").build();
+
+playerHub.start().catch(err => console.error(err.toString()));
+
+playerHub.on("NextSong", (result) => {
+
+    if (result != "empty") {
+        popFromQueue();
+        document.getElementById("videoTitle").textContent = result[0];
+        player.loadVideoById(result[1])
+        checkQueueEmpty(false);
+        setQueueDuration();
+        $("#timelineBar").css("width", 0);
+        $("#timelineBar").attr("aria-valuenow", 0);
+        $("#timelineTime").html("0:00");
+    }
+    else {
+        checkQueueEmpty(true);
+        disposePlayer();
+    }
+});
+
+function playNextSong() {
+
+    playerHub.invoke("NextSong", false).catch(function (err) {
+        return console.error(err.toString());
+    });
+}
+
 function onPlayerReady(event) {
 
     player.setVolume(initVolume);
@@ -26,30 +55,6 @@ function setPlayerVolume(volume) {
         player.setVolume(volume);
     else
         initVolume = volume;
-}
-
-function playNextSong() {
-
-    $.ajax({
-        url: "/Player/?Handler=NextSong",
-        type: "GET",
-        success: function (result) {
-            if (result != "empty") {
-                popFromQueue();
-                document.getElementById("videoTitle").textContent = result[0];
-                player.loadVideoById(result[1])
-                checkQueueEmpty(false);
-                setQueueDuration();
-                $("#timelineBar").css("width", 0);
-                $("#timelineBar").attr("aria-valuenow", 0);
-                $("#timelineTime").html("0:00");
-            }
-            else {
-                checkQueueEmpty(true);
-                disposePlayer();
-            }
-        }
-    });
 }
 
 function playPlayer() {
