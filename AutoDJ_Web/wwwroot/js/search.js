@@ -1,5 +1,4 @@
-﻿//var searchHub = new signalR.HubConnectionBuilder().withUrl("/searchHub").build();
-var appHub = new signalR.HubConnectionBuilder().withUrl("/appHub").build();
+﻿var appHub = new signalR.HubConnectionBuilder().withUrl("/appHub").build();
 
 document.getElementById("searchBtn").disabled = true;
 

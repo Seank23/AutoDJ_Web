@@ -107,8 +107,20 @@ body {
     margin: 50px;
 }
 
+.has-text {
+    font-size: 1rem;
+}
+
 @media only screen and (max-width: 1200px) {
     .section {
-        margin: 10px 50px;
+        margin: 10px;
+    }
+
+    .has-text {
+        font-size: 0.9rem;
+    }
+
+    #addToQueue {
+        width: 120px;
     }
 }

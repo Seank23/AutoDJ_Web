@@ -6,10 +6,6 @@ var player = null
 var initVolume = 10;
 var timebarTimer = null
 
-//var playerHub = new signalR.HubConnectionBuilder().withUrl("/playerHub").build();
-
-//playerHub.start().catch(err => console.error(err.toString()));
-
 appHub.on("NextSong", (result) => {
 
     if (result != "empty") {
@@ -83,7 +79,7 @@ function initPlayer(video) {
         playerVars: { "disablekb": 1, "fs": 0, "rel": 0, "modestbranding": 1, "enablejsapi": 1 },
         events: { "onReady": onPlayerReady, "onStateChange": onPlayerStateChange }
     });
-    $('#player').attr("style", "width: 100%; height: 350px;");
+    $('#player').attr("style", "width: 100%; height: 33vh;");
     $("#playerCard").fadeIn(500);
 }
 

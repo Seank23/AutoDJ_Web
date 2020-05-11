@@ -1,10 +1,6 @@
-﻿const topPos = 110
+﻿const topPos = 90
 var curHeight = 0;
 var curTop = topPos;
-
-//var queueHub = new signalR.HubConnectionBuilder().withUrl("/queueHub").build();
-
-//queueHub.start().catch(err => console.error(err.toString()));
 
 appHub.on("AddToQueue", (queueItem) => {
 
