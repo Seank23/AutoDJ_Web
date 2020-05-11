@@ -102,3 +102,13 @@ body {
 .search-body.expand {
     max-height: 500px;
 }
+
+.section {
+    margin: 50px;
+}
+
+@media only screen and (max-width: 1200px) {
+    .section {
+        margin: 10px 50px;
+    }
+}
