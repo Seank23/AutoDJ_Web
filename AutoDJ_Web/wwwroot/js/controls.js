@@ -25,9 +25,7 @@ appHub.on("Play", (result) => {
         playPlayer();
     }
     else {
-        $(".button.play").addClass("pause");
-        document.getElementById("stopButton").disabled = false;
-        document.getElementById("skipButton").disabled = false;
+        setupControlsOnPlay();
         startPlayer(result);
     }
 });
@@ -40,6 +38,13 @@ appHub.on("Stop", () => {
     checkQueueEmpty(true);
     disposePlayer();
 });
+
+function setupControlsOnPlay() {
+
+    $(".button.play").addClass("pause");
+    document.getElementById("stopButton").disabled = false;
+    document.getElementById("skipButton").disabled = false;
+}
 
 function playClicked() {
 

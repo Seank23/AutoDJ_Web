@@ -6,6 +6,10 @@ var appHub = new signalR.HubConnectionBuilder().withUrl("/appHub").build();
 document.getElementById("searchBtn").disabled = true;
 
 appHub.start().then(function () {
+
+    appHub.invoke("SyncSession").catch(function (err) {
+        return console.error(err.toString());
+    });
     document.getElementById("searchBtn").disabled = false;
 }).catch(function (err) {
     return console.error(err.toString());
@@ -84,5 +88,9 @@ function onSearch() {
 
 function onAddToQueue() {
 
-    addToQueue(searchResults[resultIndex]);
+    var result = searchResults[resultIndex];
+    var videoData = [result.videoId.toString(), result.name.toString(), result.channel.toString(), result.publishedDate.toString(), result.duration.toString(), result.thumbnail.toString()];
+    appHub.invoke("AddToQueue", videoData).catch(function (err) {
+        return console.error(err.toString());
+    });
 }

@@ -24,6 +24,15 @@ appHub.on("NextSong", (result) => {
     }
 });
 
+appHub.on("SyncPlayer", (video, time) => {
+
+    setupControlsOnPlay();
+    document.getElementById("videoTitle").textContent = video[0];
+    initPlayer(video[1], time);
+    checkQueueEmpty();
+    document.getElementById('playButton').disabled = false;
+});
+
 function playNextSong() {
 
     appHub.invoke("NextSong", false).catch(function (err) {
@@ -72,11 +81,11 @@ function startPlayer(video) {
     initPlayer(video[1])
 }
 
-function initPlayer(video) {
+function initPlayer(video, time) {
 
     player = new YT.Player('player', {
         videoId: video,
-        playerVars: { "disablekb": 1, "fs": 0, "rel": 0, "modestbranding": 1, "enablejsapi": 1 },
+        playerVars: { "start": time, "autoplay": 1, "disablekb": 1, "fs": 0, "rel": 0, "modestbranding": 1, "enablejsapi": 1 },
         events: { "onReady": onPlayerReady, "onStateChange": onPlayerStateChange }
     });
     $('#player').attr("style", "width: 100%; height: 33vh;");

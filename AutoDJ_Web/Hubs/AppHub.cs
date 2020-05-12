@@ -22,6 +22,15 @@ namespace AutoDJ_Web.Hubs
             search = new VideoSearch();
         }
 
+        public async Task SyncSession()
+        {
+            if(QueueModel.Queue.Count > 0)
+                await Clients.Caller.SendAsync("SyncQueue", QueueModel.Queue);
+
+            if (PlayerModel.VideoId != null)
+                await Clients.Caller.SendAsync("SyncPlayer", PlayerModel.GetVideoDetails(), PlayerModel.GetCurrentTime());
+        }
+
         public async Task Search(string searchTerm)
         {
             try
@@ -51,8 +60,8 @@ namespace AutoDJ_Web.Hubs
             VideoModel video = new VideoModel(videoData[0], videoData[1], videoData[2], videoData[3], videoData[4], videoData[5]);
             QueueItemModel item = new QueueItemModel(video);
             QueueModel.Queue.Add(item);
-            await Clients.All.SendAsync("AddToQueue", item);
             await Clients.Caller.SendAsync("Cancel");
+            await Clients.All.SendAsync("AddToQueue", item);
         }
 
         public async Task Order()
@@ -101,11 +110,13 @@ namespace AutoDJ_Web.Hubs
             else if (PlayerModel.IsPaused)
             {
                 PlayerModel.IsPaused = false;
+                PlayerModel.Start();
                 await Clients.All.SendAsync("Play", "playing");
             }
             else if (!PlayerModel.IsPaused)
             {
                 PlayerModel.IsPaused = true;
+                PlayerModel.Stop();
                 await Clients.All.SendAsync("Play", "paused");
             }
             else
@@ -125,6 +136,8 @@ namespace AutoDJ_Web.Hubs
                 QueueModel.PopFromQueue();
                 PlayerModel.VideoId = next.Video.VideoId;
                 PlayerModel.VideoName = next.Video.Name;
+                PlayerModel.TotalSeconds = 0;
+                PlayerModel.Start();
                 //dbHandler.DeleteVideo(next);
                 if (fromPlay)
                     await Clients.All.SendAsync("Play", PlayerModel.GetVideoDetails());

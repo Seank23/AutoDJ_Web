@@ -2,30 +2,7 @@
 var curHeight = 0;
 var curTop = topPos;
 
-appHub.on("AddToQueue", (queueItem) => {
-
-    console.log(queueItem);
-    $("#queueEmpty").hide();
-    document.getElementById("playButton").disabled = false;
-    if (player != null)
-        document.getElementById("skipButton").disabled = false;
-
-    var queueContainer = document.getElementById("queueContainer");
-    var itemContainer = document.createElement("div");
-    var itemId = "item" + queueItem['id'];
-    itemContainer.id = itemId
-    itemContainer.classList.add("queueItem");
-    itemContainer.style.top = curTop + "px";
-    queueContainer.appendChild(itemContainer);
-    $("#" + itemId).load("/QueueItemTemplate");
-    $(queueContainer).show();
-    setQueueDuration();
-
-    $(itemContainer).fadeIn(500);
-    $(queueContainer).animate({ "height": curHeight + 70 }, 200);
-    curHeight += 70;
-    curTop += 70;
-});
+appHub.on("AddToQueue", (queueItem) => { addToQueue(queueItem); });
 
 appHub.on("UpdateOrder", (orderList) => {
 
@@ -71,12 +48,37 @@ appHub.on("RemoveItem", (id) => {
     }); 
 });
 
-function addToQueue(result) {
+appHub.on("SyncQueue", (queue) => {
 
-    var videoData = [result.videoId.toString(), result.name.toString(), result.channel.toString(), result.publishedDate.toString(), result.duration.toString(), result.thumbnail.toString()];
-    appHub.invoke("AddToQueue", videoData).catch(function (err) {
-        return console.error(err.toString());
-    });
+    for (i = 0; i < queue.length; i++) {
+        addToQueue(queue[i]);
+    }
+});
+
+function addToQueue(queueItem) {
+
+    console.log(queueItem);
+    $("#queueEmpty").hide();
+    document.getElementById("playButton").disabled = false;
+    if (player != null)
+        document.getElementById("skipButton").disabled = false;
+
+    var queueContainer = document.getElementById("queueContainer");
+    var itemContainer = document.createElement("div");
+    var itemId = "item" + queueItem['id'];
+    itemContainer.id = itemId
+    itemContainer.classList.add("queueItem");
+    itemContainer.style.top = curTop + "px";
+    queueContainer.appendChild(itemContainer);
+    $("#" + itemId).load("/QueueItemTemplate?id=" + queueItem['id']);
+    $(queueContainer).show();
+    setQueueDuration();
+
+    $(itemContainer).fadeIn(500);
+    $(queueContainer).animate({ "height": curHeight + 70 }, 200);
+    curHeight += 70;
+    curTop += 70;
+    return 1;
 }
 
 function updateOrder() {
