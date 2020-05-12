@@ -122,7 +122,7 @@ function popFromQueue() {
         minVal = queue[0].style.top;
         minIndex = 0;
         for (i = 1; i < queue.length; i++) {
-            if (queue[i].style.top < minVal) {
+            if (parseInt(queue[i].style.top) < parseInt(minVal)) {
                 minVal = queue[i].style.top;
                 minIndex = i;
             }
