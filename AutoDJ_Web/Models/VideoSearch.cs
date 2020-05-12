@@ -30,7 +30,7 @@ namespace AutoDJ_Web
             var videoListRequest = youtubeService.Videos.List("snippet, contentDetails");
             string idList = "";
             foreach(var result in searchListResponse.Items)
-                idList += result.Id.VideoId + ", ";
+                idList += result.Id.VideoId + ",";
             videoListRequest.Id = idList;
 
             var videoListResponse = await videoListRequest.ExecuteAsync();
