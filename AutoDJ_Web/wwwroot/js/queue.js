@@ -19,7 +19,6 @@ appHub.on("AddToQueue", (queueItem) => {
     queueContainer.appendChild(itemContainer);
     $("#" + itemId).load("/QueueItemTemplate");
     $(queueContainer).show();
-    cancelSearch();
     setQueueDuration();
 
     $(itemContainer).fadeIn(500);
@@ -74,7 +73,8 @@ appHub.on("RemoveItem", (id) => {
 
 function addToQueue(result) {
 
-    appHub.invoke("Add", result).catch(function (err) {
+    var videoData = [result.videoId.toString(), result.name.toString(), result.channel.toString(), result.publishedDate.toString(), result.duration.toString(), result.thumbnail.toString()];
+    appHub.invoke("AddToQueue", videoData).catch(function (err) {
         return console.error(err.toString());
     });
 }

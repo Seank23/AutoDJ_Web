@@ -52,9 +52,5 @@ namespace AutoDJ_Web.Models
             }
             return null;
         }
-        public string[] ToStringArray()
-        {
-            return new string[]{ (VideoSearch.ResultIndex + 1).ToString(), VideoSearch.Videos.Count.ToString(), VideoId, Name, Channel, PublishedDate, Duration, Thumbnail };
-        }
     }
 }

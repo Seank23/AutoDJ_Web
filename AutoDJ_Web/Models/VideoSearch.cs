@@ -9,18 +9,9 @@ using System.Threading.Tasks;
 
 namespace AutoDJ_Web
 {
-    public static class VideoSearch
+    public class VideoSearch
     {
-        public static List<VideoModel> Videos { get; set; }
-        public static int ResultIndex { get; set; } = -1;
-
-        public static void ResetVideoSearch()
-        {
-            ResultIndex = -1;
-            Videos = new List<VideoModel>{ new VideoModel(null, null, null, null, null, null) };
-        }
-
-        public static async Task Search(string searchTerm, IDistributedCache cache)
+        public async Task<List<VideoModel>> Search(string searchTerm, IDistributedCache cache)
         {
             var youtubeService = new YouTubeService(new BaseClientService.Initializer()
             {
@@ -56,20 +47,21 @@ namespace AutoDJ_Web
 
             var options = new DistributedCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromDays(7));
             cache.SetString(searchTerm, VideoDetailsToString(videoDetails), options);
-            PopulateVideoModel(videoDetails);
+            return PopulateVideoModel(videoDetails);
         }
 
-        public static void PopulateVideoModel(List<string[]> videoDetails)
+        public List<VideoModel> PopulateVideoModel(List<string[]> videoDetails)
         {
-            Videos = new List<VideoModel>();
+            List<VideoModel> myVideos = new List<VideoModel>();
 
             foreach(string[] details in videoDetails)
             {
-                Videos.Add(new VideoModel(details[0], details[1], details[2], details[3], details[4], details[5]));
+                myVideos.Add(new VideoModel(details[0], details[1], details[2], details[3], details[4], details[5]));
             }
+            return myVideos;
         }
 
-        public static string VideoDetailsToString(List<string[]> details)
+        public string VideoDetailsToString(List<string[]> details)
         {
             string output = "";
 
@@ -86,7 +78,7 @@ namespace AutoDJ_Web
             return output;
         }
 
-        public static List<string[]> ParseVideoDetailsString(string str)
+        public List<string[]> ParseVideoDetailsString(string str)
         {
             List<string[]> videoDetails = new List<string[]>();
             string[] lists = str.Split(" ~~~~~ ");

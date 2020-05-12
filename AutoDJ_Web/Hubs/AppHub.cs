@@ -13,47 +13,31 @@ namespace AutoDJ_Web.Hubs
     {
         protected DBHandler dbHandler;
         private readonly IDistributedCache _cache;
+        private VideoSearch search;
 
         public AppHub(IDistributedCache cache, ApplicationDbContext context)
         {
             _cache = cache;
             dbHandler = new DBHandler(context);
-        }
-
-        public async Task UpdateResult(bool next)
-        {
-            if (next && VideoSearch.ResultIndex < VideoSearch.Videos.Count - 1)
-            {
-                VideoSearch.ResultIndex++;
-                await Clients.Caller.SendAsync("UpdateResult", VideoSearch.Videos[VideoSearch.ResultIndex].ToStringArray());
-            }
-            else if (!next && VideoSearch.ResultIndex > 0)
-            {
-                VideoSearch.ResultIndex--;
-                await Clients.Caller.SendAsync("UpdateResult", VideoSearch.Videos[VideoSearch.ResultIndex].ToStringArray());
-            }
-            else
-                await Clients.Caller.SendAsync("UpdateResult", null);
+            search = new VideoSearch();
         }
 
         public async Task Search(string searchTerm)
         {
             try
             {
+                List<VideoModel> videos = new List<VideoModel>();
+
                 if (_cache.GetString(searchTerm) == null)
                 {
-                    VideoSearch.Search(searchTerm, _cache).Wait();
+                    videos = await search.Search(searchTerm, _cache);
                 }
                 else
                 {
-                    List<string[]> result = VideoSearch.ParseVideoDetailsString(_cache.GetString(searchTerm));
-                    VideoSearch.PopulateVideoModel(result);
+                    List<string[]> result = search.ParseVideoDetailsString(_cache.GetString(searchTerm));
+                    videos = search.PopulateVideoModel(result);
                 }
-
-                if (VideoSearch.Videos.Count > 0)
-                    await Clients.Caller.SendAsync("Search", 1);
-                else
-                    await Clients.Caller.SendAsync("Search", 0);
+                await Clients.Caller.SendAsync("Search", videos);
             }
             catch (Exception e)
             {
@@ -62,25 +46,13 @@ namespace AutoDJ_Web.Hubs
             }
         }
 
-        public async Task Cancel()
+        public async Task AddToQueue(string[] videoData)
         {
-            VideoSearch.ResetVideoSearch();
+            VideoModel video = new VideoModel(videoData[0], videoData[1], videoData[2], videoData[3], videoData[4], videoData[5]);
+            QueueItemModel item = new QueueItemModel(video);
+            QueueModel.Queue.Add(item);
+            await Clients.All.SendAsync("AddToQueue", item);
             await Clients.Caller.SendAsync("Cancel");
-        }
-
-        public async Task ResultId()
-        {
-            await Clients.Caller.SendAsync("ResultToAdd", new string[] { VideoSearch.ResultIndex.ToString(), VideoSearch.Videos.Count.ToString() });
-        }
-
-        public async Task Add(string id)
-        {
-            VideoModel vidToAdd = VideoSearch.Videos[int.Parse(id)];
-            QueueItemModel queueItem = new QueueItemModel(vidToAdd);
-            QueueModel.Queue.Add(queueItem);
-            //dbHandler.WriteVideo(queueItem);
-
-            await Clients.All.SendAsync("AddToQueue", queueItem);
         }
 
         public async Task Order()
