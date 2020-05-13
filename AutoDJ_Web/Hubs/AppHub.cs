@@ -22,6 +22,18 @@ namespace AutoDJ_Web.Hubs
             search = new VideoSearch();
         }
 
+        public async Task CreateSession()
+        {
+            int sessionId = SessionHandler.CreateSessionId();
+            string userId = SessionHandler.CreateUserId();
+            await Clients.Caller.SendAsync("SessionCreated", sessionId, userId);
+        }
+
+        public async Task JoinSession(string sessionId)
+        {
+            await Clients.Caller.SendAsync("SessionJoined", true);
+        }
+
         public async Task SyncSession()
         {
             if(QueueModel.Queue.Count > 0)
