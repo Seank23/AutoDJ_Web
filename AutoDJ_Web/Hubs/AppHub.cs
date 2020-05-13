@@ -24,23 +24,56 @@ namespace AutoDJ_Web.Hubs
 
         public async Task CreateSession()
         {
-            int sessionId = SessionHandler.CreateSessionId();
-            string userId = SessionHandler.CreateUserId();
+            string sessionId = SessionHandler.CreateSession();
+            string userId = SessionHandler.CreateAndAddUser(sessionId);
             await Clients.Caller.SendAsync("SessionCreated", sessionId, userId);
         }
 
-        public async Task JoinSession(string sessionId)
+        public async Task JoinSession(string sessionId, string userId, bool sync)
         {
-            await Clients.Caller.SendAsync("SessionJoined", true);
+            if (sessionId == null)
+                sessionId = "null";
+            if (userId == null)
+                userId = "null";
+
+            if(SessionHandler.IsValidSession(sessionId) && SessionHandler.GetUsersSession(userId) != sessionId)
+            {
+                userId = SessionHandler.CreateAndAddUser(sessionId);
+                await Clients.Caller.SendAsync("SessionJoined", true, sessionId, userId);
+            }
+            else if (SessionHandler.GetUsersSession(userId) == sessionId)
+            {
+                await Clients.Caller.SendAsync("SessionJoined", true, sessionId, userId);
+            }
+            else if(!sync)
+            {
+                await Clients.Caller.SendAsync("SessionJoined", false);
+            }
+        }
+
+        public async Task LeaveSession(string sessionId, string userId)
+        {
+            if (sessionId == null)
+                sessionId = "null";
+            if (userId == null)
+                userId = "null";
+
+            SessionHandler.LeaveSession(sessionId, userId);
+            await Clients.Caller.SendAsync("SessionLeft");
         }
 
         public async Task SyncSession()
         {
-            if(QueueModel.Queue.Count > 0)
+            if (QueueModel.Queue.Count > 0)
                 await Clients.Caller.SendAsync("SyncQueue", QueueModel.Queue);
 
             if (PlayerModel.VideoId != null)
                 await Clients.Caller.SendAsync("SyncPlayer", PlayerModel.GetVideoDetails(), PlayerModel.GetCurrentTime());
+        }
+
+        public void PingServer(string userId)
+        {
+            SessionHandler.Ping(userId);
         }
 
         public async Task Search(string searchTerm)

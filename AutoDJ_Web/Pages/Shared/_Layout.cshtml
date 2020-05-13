@@ -13,6 +13,8 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/lib/jquery-ui-1.12.1/jquery-ui.js"></script>
+    <script src="~/lib/bootbox/bootbox.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js"></script>
 </head>
 <body>
     <header>
@@ -25,11 +27,17 @@
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
                     <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
+                        <li class="nav-item sessionDisconnected">
                             <a class="nav-link text-dark" href="" data-toggle="modal" data-target="#createSessionModal">Create Session</a>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item sessionDisconnected">
                             <a class="nav-link text-dark" href="" data-toggle="modal" data-target="#joinSessionModal">Join Session</a>
+                        </li>
+                        <li class="nav-item sessionConnected">
+                            <a class="nav-link text-dark" href="" data-toggle="modal" data-target="#connectedSessionModal">Connected to <span id="navSessionId"></span></a>
+                        </li>
+                        <li class="nav-item sessionConnected">
+                            <a class="nav-link text-dark" href="javascript:void(0);" onclick="leaveSession()">Leave Session</a>
                         </li>
                     </ul>
                 </div>

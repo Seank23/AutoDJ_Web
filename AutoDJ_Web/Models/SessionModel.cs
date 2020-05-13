@@ -7,9 +7,15 @@ namespace AutoDJ_Web.Models
 {
     public class SessionModel
     {
-        public int SessionID { get; set; }
-        public List<int> Users { get; set; }
+        public string SessionID { get; set; }
+        public List<string> Users { get; set; }
         //public QueueModel Queue { get; set; }
         //public PlayerModel Player { get; set; }
+
+        public SessionModel(string id)
+        {
+            SessionID = id;
+            Users = new List<string>();
+        }
     }
 }

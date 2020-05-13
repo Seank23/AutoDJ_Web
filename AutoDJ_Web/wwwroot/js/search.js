@@ -1,19 +1,7 @@
 ﻿var searchResults;
 var resultIndex = -1;
 
-var appHub = new signalR.HubConnectionBuilder().withUrl("/appHub").build();
-
 document.getElementById("searchBtn").disabled = true;
-
-appHub.start().then(function () {
-
-    appHub.invoke("SyncSession").catch(function (err) {
-        return console.error(err.toString());
-    });
-    document.getElementById("searchBtn").disabled = false;
-}).catch(function (err) {
-    return console.error(err.toString());
-});
 
 appHub.on("Search", (results) => {
 
