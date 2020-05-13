@@ -35,6 +35,7 @@ namespace AutoDJ_Web.Hubs
         {
             try
             {
+                searchTerm = searchTerm.ToLower();
                 List<VideoModel> videos = new List<VideoModel>();
 
                 if (_cache.GetString(searchTerm) == null)

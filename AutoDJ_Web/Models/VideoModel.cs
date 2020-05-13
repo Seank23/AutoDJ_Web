@@ -21,11 +21,11 @@ namespace AutoDJ_Web.Models
             Name = name;
             Channel = channel;
             PublishedDate = published;
-            Duration = DurationToTime(duration);
+            Duration = duration;
             Thumbnail = thumbnail;
         }
 
-        public string DurationToTime(string duration)
+        public static string DurationToTime(string duration)
         {
             if (duration != null)
             {

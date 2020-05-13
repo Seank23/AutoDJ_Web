@@ -56,7 +56,8 @@ namespace AutoDJ_Web
 
             foreach(string[] details in videoDetails)
             {
-                myVideos.Add(new VideoModel(details[0], details[1], details[2], details[3], details[4], details[5]));
+                string duration = VideoModel.DurationToTime(details[4]);
+                myVideos.Add(new VideoModel(details[0], details[1], details[2], details[3], duration, details[5]));
             }
             return myVideos;
         }
