@@ -78,7 +78,7 @@ function onAddToQueue() {
 
     var result = searchResults[resultIndex];
     var videoData = [result.videoId.toString(), result.name.toString(), result.channel.toString(), result.publishedDate.toString(), result.duration.toString(), result.thumbnail.toString()];
-    appHub.invoke("AddToQueue", videoData).catch(function (err) {
+    appHub.invoke("AddToQueue", Cookies.get('sessionId'), Cookies.get('userId'), videoData).catch(function (err) {
         return console.error(err.toString());
     });
 }

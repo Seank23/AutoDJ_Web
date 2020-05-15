@@ -48,14 +48,14 @@ function setupControlsOnPlay() {
 
 function playClicked() {
 
-    appHub.invoke("Play").catch(function (err) {
+    appHub.invoke("Play", Cookies.get('sessionId')).catch(function (err) {
         return console.error(err.toString());
     });
 }
 
 function stopClicked() {
 
-    appHub.invoke("Stop").catch(function (err) {
+    appHub.invoke("Stop", Cookies.get('sessionId')).catch(function (err) {
         return console.error(err.toString());
     });
 }

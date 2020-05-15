@@ -35,7 +35,7 @@ appHub.on("SyncPlayer", (video, time) => {
 
 function playNextSong() {
 
-    appHub.invoke("NextSong", false).catch(function (err) {
+    appHub.invoke("NextSong", Cookies.get('sessionId'), false).catch(function (err) {
         return console.error(err.toString());
     });
 }

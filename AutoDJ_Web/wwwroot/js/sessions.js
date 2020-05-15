@@ -6,16 +6,18 @@ appHub.start().then(function () {
         return console.error(err.toString());
     });
     document.getElementById("searchBtn").disabled = false;
+    document.getElementById("createSessionBtn").disabled = false;
+    document.getElementById("joinSessionBtn").disabled = false;
 }).catch(function (err) {
     return console.error(err.toString());
 });
 
 setInterval(function () {
-    setSessionCookie(Cookies.get('sessionId'), Cookies.get('userId'));
-    appHub.invoke("Ping", Cookies.get('userId'), true).catch(function (err) {
+
+    appHub.invoke("PingServer", Cookies.get('userId')).catch(function (err) {
         return console.error(err.toString());
     });
-}, 300000);
+}, 30000);
 
 $(".sessionConnected").hide();
 
@@ -35,6 +37,7 @@ appHub.on("SessionJoined", (success, sessionId, userId) => {
         $("#enteredSessionId").removeClass("is-invalid");
         $("#enteredSessionId").addClass("is-valid");
         setSessionCookie(sessionId, userId);
+        console.log("Session: " + Cookies.get('sessionId') + " User: " + userId);
         setTimeout(function () {
             $("#joinSessionModal").modal("hide");
             $("#enteredSessionId").removeClass("is-valid");
@@ -52,9 +55,13 @@ appHub.on("SessionLeft", () => {
     sessionDisconnected();
 });
 
+appHub.on("PingReturned", (sessionId, userId) => {
+    setSessionCookie(sessionId, userId);
+});
+
 function createSession() {
 
-    appHub.invoke("CreateSession").catch(function (err) {
+    appHub.invoke("CreateSession", Cookies.get('userId')).catch(function (err) {
         return console.error(err.toString());
     });
 }
@@ -97,6 +104,10 @@ function sessionConnected() {
     $("#displaySessionId").val(Cookies.get('sessionId'));
     $(".sessionDisconnected").hide();
     $(".sessionConnected").show();
+
+    appHub.invoke("SyncSession", Cookies.get('sessionId'), Cookies.get('userId')).catch(function (err) {
+        return console.error(err.toString());
+    });
 }
 
 function sessionDisconnected() {

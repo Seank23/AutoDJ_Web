@@ -7,32 +7,32 @@ using System.Threading.Tasks;
 
 namespace AutoDJ_Web.Models
 {
-    public static class PlayerModel
+    public class PlayerModel
     {
-        public static string VideoId { get; set; }
-        public static string VideoName { get; set; }
-        public static bool IsPaused { get; set; }
-        private static Stopwatch Timer { get; set; }
-        public static int TotalSeconds { get; set; }
+        public string VideoId { get; set; }
+        public string VideoName { get; set; }
+        public bool IsPaused { get; set; }
+        private Stopwatch Timer { get; set; }
+        public int TotalSeconds { get; set; }
 
-        public static string[] GetVideoDetails()
+        public string[] GetVideoDetails()
         {
             return new string[] { VideoName, VideoId };
         }
 
-        public static void Start()
+        public void Start()
         {
             Timer = new Stopwatch();
             Timer.Start();
         }
 
-        public static void Stop()
+        public void Stop()
         {
             Timer.Stop();
             TotalSeconds += (int)Timer.Elapsed.TotalSeconds;
         }
 
-        public static int GetCurrentTime()
+        public int GetCurrentTime()
         {
             return TotalSeconds + (int)Timer.Elapsed.TotalSeconds;
         }

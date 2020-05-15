@@ -164,7 +164,7 @@
             <div class="modal-footer">
                 <div class="createSessionInitial">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" onclick="createSession()">Create Session</button>
+                    <button type="button" class="btn btn-primary" id="createSessionBtn" onclick="createSession()" disabled>Create Session</button>
                 </div>
                 <div class="createSessionSuccessful" style="display: none">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -201,7 +201,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary" onclick="joinSession()">Join Session</button>
+                    <button type="submit" class="btn btn-primary" id="joinSessionBtn" onclick="joinSession()" disabled>Join Session</button>
                 </div>
             </div>
         </div>

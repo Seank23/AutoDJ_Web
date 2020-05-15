@@ -97,6 +97,8 @@ namespace AutoDJ_Web.Models
 
         public static bool IsValidUser(string userId)
         {
+            if (UserIdDict.Keys.Count == 0)
+                return false;
             return UserIdDict.Keys.Contains(userId);
         }
 
@@ -108,10 +110,24 @@ namespace AutoDJ_Web.Models
                 return "";
         }
 
-        public static void Ping(string userId)
+        public static string[] Ping(string userId)
         {
-            if(IsValidUser(userId))
+            if (IsValidUser(userId))
+            {
                 UserIdDict[userId] = DateTime.Now;
+                return new string[] { GetUsersSession(userId), userId };
+            }
+            return new string[] { "", "" };
         } 
+
+        public static QueueModel GetQueue(string sessionId)
+        {
+            return Sessions.Where(session => session.SessionID == sessionId).First().Queue;
+        }
+
+        public static PlayerModel GetPlayer(string sessionId)
+        {
+            return Sessions.Where(session => session.SessionID == sessionId).First().Player;
+        }
     }
 }

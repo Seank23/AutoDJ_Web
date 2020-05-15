@@ -2,7 +2,7 @@
 var curHeight = 0;
 var curTop = topPos;
 
-appHub.on("AddToQueue", (queueItem) => { addToQueue(queueItem); });
+appHub.on("AddToQueue", (queueItem, sessionId) => { addToQueue(queueItem, sessionId); });
 
 appHub.on("UpdateOrder", (orderList) => {
 
@@ -48,15 +48,16 @@ appHub.on("RemoveItem", (id) => {
     }); 
 });
 
-appHub.on("SyncQueue", (queue) => {
+appHub.on("SyncQueue", (sessionId, queue) => {
 
     for (i = 0; i < queue.length; i++) {
-        addToQueue(queue[i]);
+        addToQueue(queue[i], sessionId);
     }
 });
 
-function addToQueue(queueItem) {
+function addToQueue(queueItem, sessionId) {
 
+    console.log(sessionId);
     console.log(queueItem);
     $("#queueEmpty").hide();
     document.getElementById("playButton").disabled = false;
@@ -70,7 +71,9 @@ function addToQueue(queueItem) {
     itemContainer.classList.add("queueItem");
     itemContainer.style.top = curTop + "px";
     queueContainer.appendChild(itemContainer);
-    $("#" + itemId).load("/QueueItemTemplate?id=" + queueItem['id']);
+    var url = "/QueueItemTemplate?sessionId=" + sessionId + "&itemId=" + queueItem['id'];
+    console.log(url);
+    $("#" + itemId).load("/QueueItemTemplate?sessionId=" + sessionId + "&itemId=" + queueItem['id']);
     $(queueContainer).show();
     setQueueDuration();
 
@@ -83,7 +86,7 @@ function addToQueue(queueItem) {
 
 function updateOrder() {
 
-    appHub.invoke("Order").catch(function (err) {
+    appHub.invoke("Order", Cookies.get('sessionId')).catch(function (err) {
         return console.error(err.toString());
     });
 }
@@ -92,7 +95,7 @@ function setQueueDuration() {
 
     if ($("#queueContainer").children().length != 0) {
 
-        appHub.invoke("Duration").catch(function (err) {
+        appHub.invoke("Duration", Cookies.get('sessionId')).catch(function (err) {
             return console.error(err.toString());
         });
     }
@@ -104,14 +107,14 @@ function setQueueDuration() {
 
 function addVote(id) {
 
-    appHub.invoke("AddVote", id).catch(function (err) {
+    appHub.invoke("AddVote", Cookies.get('sessionId'), id).catch(function (err) {
         return console.error(err.toString());
     });
 }
 
 function remove(id) {
 
-    appHub.invoke("Remove", id).catch(function (err) {
+    appHub.invoke("Remove", Cookies.get('sessionId'), id).catch(function (err) {
         return console.error(err.toString());
     });
 }

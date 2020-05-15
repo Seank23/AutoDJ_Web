@@ -22,11 +22,15 @@ namespace AutoDJ_Web.Hubs
             search = new VideoSearch();
         }
 
-        public async Task CreateSession()
+        public async Task CreateSession(string userId)
         {
-            string sessionId = SessionHandler.CreateSession();
-            string userId = SessionHandler.CreateAndAddUser(sessionId);
-            await Clients.Caller.SendAsync("SessionCreated", sessionId, userId);
+            if(SessionHandler.GetUsersSession(userId) == "")
+            {
+                string sessionId = SessionHandler.CreateSession();
+                userId = SessionHandler.CreateAndAddUser(sessionId);
+                await Groups.AddToGroupAsync(Context.ConnectionId, sessionId);
+                await Clients.Caller.SendAsync("SessionCreated", sessionId, userId);
+            }
         }
 
         public async Task JoinSession(string sessionId, string userId, bool sync)
@@ -39,10 +43,12 @@ namespace AutoDJ_Web.Hubs
             if(SessionHandler.IsValidSession(sessionId) && SessionHandler.GetUsersSession(userId) != sessionId)
             {
                 userId = SessionHandler.CreateAndAddUser(sessionId);
+                await Groups.AddToGroupAsync(Context.ConnectionId, sessionId);
                 await Clients.Caller.SendAsync("SessionJoined", true, sessionId, userId);
             }
-            else if (SessionHandler.GetUsersSession(userId) == sessionId)
+            else if (SessionHandler.GetUsersSession(userId) == sessionId && sessionId != "")
             {
+                await Groups.AddToGroupAsync(Context.ConnectionId, sessionId);
                 await Clients.Caller.SendAsync("SessionJoined", true, sessionId, userId);
             }
             else if(!sync)
@@ -51,29 +57,34 @@ namespace AutoDJ_Web.Hubs
             }
         }
 
+        public async Task SyncSession(string sessionId, string userId)
+        {
+            if (SessionHandler.IsValidSession(sessionId))
+            {
+                QueueModel myQueue = SessionHandler.GetQueue(sessionId);
+                PlayerModel myPlayer = SessionHandler.GetPlayer(sessionId);
+
+                if (myQueue.Queue.Count > 0)
+                    await Clients.Caller.SendAsync("SyncQueue", sessionId, myQueue.Queue);
+
+                if (myPlayer.VideoId != null)
+                    await Clients.Caller.SendAsync("SyncPlayer", myPlayer.GetVideoDetails(), myPlayer.GetCurrentTime());
+            }
+        }
+
         public async Task LeaveSession(string sessionId, string userId)
         {
-            if (sessionId == null)
-                sessionId = "null";
-            if (userId == null)
-                userId = "null";
-
             SessionHandler.LeaveSession(sessionId, userId);
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, sessionId);
             await Clients.Caller.SendAsync("SessionLeft");
         }
 
-        public async Task SyncSession()
+        public async Task PingServer(string userId)
         {
-            if (QueueModel.Queue.Count > 0)
-                await Clients.Caller.SendAsync("SyncQueue", QueueModel.Queue);
-
-            if (PlayerModel.VideoId != null)
-                await Clients.Caller.SendAsync("SyncPlayer", PlayerModel.GetVideoDetails(), PlayerModel.GetCurrentTime());
-        }
-
-        public void PingServer(string userId)
-        {
-            SessionHandler.Ping(userId);
+            if (userId == null)
+                userId = "null";
+            string[] id = SessionHandler.Ping(userId);
+            await Clients.Caller.SendAsync("PingReturned", id[0], id[1]);
         }
 
         public async Task Search(string searchTerm)
@@ -101,106 +112,138 @@ namespace AutoDJ_Web.Hubs
             }
         }
 
-        public async Task AddToQueue(string[] videoData)
+        public async Task AddToQueue(string sessionId, string userId, string[] videoData)
         {
-            VideoModel video = new VideoModel(videoData[0], videoData[1], videoData[2], videoData[3], videoData[4], videoData[5]);
-            QueueItemModel item = new QueueItemModel(video);
-            QueueModel.Queue.Add(item);
-            await Clients.Caller.SendAsync("Cancel");
-            await Clients.All.SendAsync("AddToQueue", item);
-        }
-
-        public async Task Order()
-        {
-            QueueModel.OrderQueue();
-            await Clients.All.SendAsync("UpdateOrder", QueueModel.GetOrderList());
-        }
-
-        public async Task Duration()
-        {
-            int duration = QueueModel.GetDurationSeconds();
-            int hrs = (int)Math.Floor((double)duration / 3600);
-            int mins = (int)Math.Floor(((double)duration / 60) % 60);
-            int secs = duration % 60;
-
-            if (hrs != 0)
-                await Clients.All.SendAsync("SetQueueDuration", hrs + " hrs " + mins + " mins " + secs + " secs");
-            else if (mins != 0)
-                await Clients.All.SendAsync("SetQueueDuration", mins + " mins " + secs + " secs");
-            else
-                await Clients.All.SendAsync("SetQueueDuration", secs + " secs");
-        }
-
-        public async Task AddVote(int id)
-        {
-            QueueItemModel myItem = QueueModel.Queue.Where(item => item.Id == id).First();
-            myItem.Rating++;
-            //dbHandler.UpdateRating(myItem);
-            await Clients.All.SendAsync("SetRating", myItem.Rating, id);
-        }
-
-        public async Task Remove(int id)
-        {
-            QueueItemModel myItem = QueueModel.Queue.Where(item => item.Id == id).First();
-            QueueModel.Queue.Remove(myItem);
-            //dbHandler.DeleteVideo(myItem);
-            await Clients.All.SendAsync("RemoveItem", id);
-        }
-
-        public async Task Play()
-        {
-            if (PlayerModel.VideoId == null)
+            if (SessionHandler.GetUsersSession(userId) == sessionId)
             {
-                await NextSong(true);
+                QueueModel myQueue = SessionHandler.GetQueue(sessionId);
+                VideoModel video = new VideoModel(videoData[0], videoData[1], videoData[2], videoData[3], videoData[4], videoData[5]);
+                QueueItemModel item = new QueueItemModel(video, myQueue.NextId());
+                myQueue.Queue.Add(item);
+                await Clients.Caller.SendAsync("Cancel");
+                await Clients.Group(sessionId).SendAsync("AddToQueue", item, sessionId);
             }
-            else if (PlayerModel.IsPaused)
-            {
-                PlayerModel.IsPaused = false;
-                PlayerModel.Start();
-                await Clients.All.SendAsync("Play", "playing");
-            }
-            else if (!PlayerModel.IsPaused)
-            {
-                PlayerModel.IsPaused = true;
-                PlayerModel.Stop();
-                await Clients.All.SendAsync("Play", "paused");
-            }
-            else
-                await Clients.All.SendAsync("Play", null);
         }
 
-        public async Task Stop()
+        public async Task Order(string sessionId)
         {
-            await DisposePlayer();
+            if (SessionHandler.IsValidSession(sessionId))
+            {
+                QueueModel myQueue = SessionHandler.GetQueue(sessionId);
+                myQueue.OrderQueue();
+                await Clients.Group(sessionId).SendAsync("UpdateOrder", myQueue.GetOrderList());
+            }
         }
 
-        public async Task NextSong(bool fromPlay)
+        public async Task Duration(string sessionId)
         {
-            if (QueueModel.Queue.Count > 0)
+            if (SessionHandler.IsValidSession(sessionId))
             {
-                QueueItemModel next = QueueModel.Queue[0];
-                QueueModel.PopFromQueue();
-                PlayerModel.VideoId = next.Video.VideoId;
-                PlayerModel.VideoName = next.Video.Name;
-                PlayerModel.TotalSeconds = 0;
-                PlayerModel.Start();
-                //dbHandler.DeleteVideo(next);
-                if (fromPlay)
-                    await Clients.All.SendAsync("Play", PlayerModel.GetVideoDetails());
+                QueueModel myQueue = SessionHandler.GetQueue(sessionId);
+                int duration = myQueue.GetDurationSeconds();
+                int hrs = (int)Math.Floor((double)duration / 3600);
+                int mins = (int)Math.Floor(((double)duration / 60) % 60);
+                int secs = duration % 60;
+
+                if (hrs != 0)
+                    await Clients.Group(sessionId).SendAsync("SetQueueDuration", hrs + " hrs " + mins + " mins " + secs + " secs");
+                else if (mins != 0)
+                    await Clients.Group(sessionId).SendAsync("SetQueueDuration", mins + " mins " + secs + " secs");
                 else
-                    await Clients.All.SendAsync("NextSong", PlayerModel.GetVideoDetails());
-            }
-            else
-            {
-                await DisposePlayer();
+                    await Clients.Group(sessionId).SendAsync("SetQueueDuration", secs + " secs");
             }
         }
 
-        public async Task DisposePlayer()
+        public async Task AddVote(string sessionId, int itemId)
         {
-            PlayerModel.VideoId = null;
-            PlayerModel.VideoName = null;
-            await Clients.All.SendAsync("Stop", "empty");
+            if (SessionHandler.IsValidSession(sessionId))
+            {
+                QueueModel myQueue = SessionHandler.GetQueue(sessionId);
+                QueueItemModel myItem = myQueue.Queue.Where(item => item.Id == itemId).First();
+                myItem.Rating++;
+                await Clients.Group(sessionId).SendAsync("SetRating", myItem.Rating, itemId);
+            }
+        }
+
+        public async Task Remove(string sessionId, int itemId)
+        {
+            if (SessionHandler.IsValidSession(sessionId))
+            {
+                QueueModel myQueue = SessionHandler.GetQueue(sessionId);
+                QueueItemModel myItem = myQueue.Queue.Where(item => item.Id == itemId).First();
+                myQueue.Queue.Remove(myItem);
+                await Clients.Group(sessionId).SendAsync("RemoveItem", itemId);
+            }
+        }
+
+        public async Task Play(string sessionId)
+        {
+            if (SessionHandler.IsValidSession(sessionId))
+            {
+                PlayerModel player = SessionHandler.GetPlayer(sessionId);
+
+                if (player.VideoId == null)
+                {
+                    await NextSong(sessionId, true);
+                }
+                else if (player.IsPaused)
+                {
+                    player.IsPaused = false;
+                    player.Start();
+                    await Clients.Group(sessionId).SendAsync("Play", "playing");
+                }
+                else if (!player.IsPaused)
+                {
+                    player.IsPaused = true;
+                    player.Stop();
+                    await Clients.Group(sessionId).SendAsync("Play", "paused");
+                }
+                else
+                    await Clients.Group(sessionId).SendAsync("Play", null);
+            }
+        }
+
+        public async Task Stop(string sessionId)
+        {
+            await DisposePlayer(sessionId);
+        }
+
+        public async Task NextSong(string sessionId, bool fromPlay)
+        {
+            if (SessionHandler.IsValidSession(sessionId))
+            {
+                QueueModel myQueue = SessionHandler.GetQueue(sessionId);
+                PlayerModel myPlayer = SessionHandler.GetPlayer(sessionId);
+                if (myQueue.Queue.Count > 0)
+                {
+                    QueueItemModel next = myQueue.Queue[0];
+                    myQueue.PopFromQueue();
+                    myPlayer.VideoId = next.Video.VideoId;
+                    myPlayer.VideoName = next.Video.Name;
+                    myPlayer.TotalSeconds = 0;
+                    myPlayer.Start();
+
+                    if (fromPlay)
+                        await Clients.Group(sessionId).SendAsync("Play", myPlayer.GetVideoDetails());
+                    else
+                        await Clients.Group(sessionId).SendAsync("NextSong", myPlayer.GetVideoDetails());
+                }
+            }
+            else
+            {
+                await DisposePlayer(sessionId);
+            }
+        }
+
+        public async Task DisposePlayer(string sessionId)
+        {
+            if (SessionHandler.IsValidSession(sessionId))
+            {
+                PlayerModel myPlayer = SessionHandler.GetPlayer(sessionId);
+                myPlayer.VideoId = null;
+                myPlayer.VideoName = null;
+                await Clients.Group(sessionId).SendAsync("Stop", "empty");
+            }
         }
     }
 }

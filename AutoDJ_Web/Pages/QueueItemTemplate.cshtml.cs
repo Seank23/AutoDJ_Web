@@ -20,9 +20,9 @@ namespace AutoDJ_Web.Pages
             dbHandler = new DBHandler(context);
         }
 
-        public void OnGet(int id)
+        public void OnGet(string sessionId, int itemId)
         {
-            MyItem = QueueModel.Queue.Where(item => item.Id == id).First();
+            MyItem = SessionHandler.GetQueue(sessionId).Queue.Where(item => item.Id == itemId).First();
         }
     }
 }
