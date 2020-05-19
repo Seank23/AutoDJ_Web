@@ -11,10 +11,10 @@ namespace AutoDJ_Web.Models
         public VideoModel Video { get; set; }
         public int Rating { get; set; }
 
-        public QueueItemModel(VideoModel video, int id)
+        public QueueItemModel(int id, VideoModel video, int rating)
         {
             Video = video;
-            Rating = 0;
+            Rating = rating;
             Id = id;
         }
     }

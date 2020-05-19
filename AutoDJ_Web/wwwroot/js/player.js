@@ -6,7 +6,11 @@ var player = null
 var initVolume = 10;
 var timebarTimer = null
 
-appHub.on("NextSong", (result) => {
+var playerState = "";
+
+appHub.on("NextSong", (result) => { nextSong(result); });
+
+function nextSong(result) {
 
     if (result != "empty") {
         popFromQueue();
@@ -22,7 +26,7 @@ appHub.on("NextSong", (result) => {
         checkQueueEmpty(true);
         disposePlayer();
     }
-});
+}
 
 appHub.on("SyncPlayer", (video, time) => {
 
@@ -35,9 +39,17 @@ appHub.on("SyncPlayer", (video, time) => {
 
 function playNextSong() {
 
-    appHub.invoke("NextSong", Cookies.get('sessionId'), false).catch(function (err) {
-        return console.error(err.toString());
-    });
+    if (Cookies.get('sessionId') != "") {
+        appHub.invoke("NextSong", Cookies.get('sessionId'), false).catch(function (err) {
+            return console.error(err.toString());
+        });
+    }
+    else {
+        if (clientQueue.length > 0)
+            nextSong([clientQueue[0][1][1], clientQueue[0][1][0]]);
+        else
+            nextSong("empty");
+    }
 }
 
 function onPlayerReady(event) {
@@ -76,13 +88,18 @@ function pausePlayer() {
 
 function startPlayer(video) {
 
+    if (Cookies.get('sessionId') == "")
+        video = [clientQueue[0][1][1], clientQueue[0][1][0]];
+
     popFromQueue();
     document.getElementById("videoTitle").textContent = video[0];
     initPlayer(video[1])
+
 }
 
 function initPlayer(video, time) {
 
+    playerState = "paused";
     player = new YT.Player('player', {
         videoId: video,
         playerVars: { "start": time, "autoplay": 1, "disablekb": 1, "fs": 0, "rel": 0, "modestbranding": 1, "enablejsapi": 1 },
@@ -96,6 +113,7 @@ function disposePlayer() {
 
     player.pauseVideo();
     clearInterval(timebarTimer);
+    playerState = "";
     $("#playerCard").fadeOut(500, function () {
         $("#player").remove();
         player = null;

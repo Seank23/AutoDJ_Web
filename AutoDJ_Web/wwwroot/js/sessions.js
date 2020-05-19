@@ -2,6 +2,9 @@
 
 appHub.start().then(function () {
 
+    appHub.invoke("PingServer", Cookies.get('userId')).catch(function (err) {
+        return console.error(err.toString());
+    });
     appHub.invoke("JoinSession", Cookies.get('sessionId'), Cookies.get('userId'), true).catch(function (err) {
         return console.error(err.toString());
     });
@@ -28,12 +31,26 @@ appHub.on("SessionCreated", (sessionId, userId) => {
     $("#newSessionId").val(sessionId);
     $(".createSessionInitial").hide();
     $(".createSessionSuccessful").show();
-    sessionConnected();
+
+    if (player != null) {
+        var details = [player.getVideoUrl().substring(32, player.getVideoUrl().length), document.getElementById("videoTitle").textContent, Math.round(player.getCurrentTime()).toString()];
+        appHub.invoke("MigrateClientPlayer", sessionId, details).catch(function (err) {
+            return console.error(err.toString());
+        });
+    }
+    if (clientQueue.length > 0) {
+        appHub.invoke("MigrateClientQueue", sessionId, JSON.stringify(clientQueue)).catch(function (err) {
+            return console.error(err.toString());
+        }); 
+    }
+    else
+        sessionConnected();
 });
 
 appHub.on("SessionJoined", (success, sessionId, userId) => {
 
     if (success) {
+        clearQueue();
         $("#enteredSessionId").removeClass("is-invalid");
         $("#enteredSessionId").addClass("is-valid");
         setSessionCookie(sessionId, userId);
@@ -52,6 +69,8 @@ appHub.on("SessionJoined", (success, sessionId, userId) => {
 appHub.on("SessionLeft", () => {
 
     setSessionCookie('', '');
+    stopClient();
+    clearQueue();
     sessionDisconnected();
 });
 
@@ -104,8 +123,9 @@ function sessionConnected() {
     $("#displaySessionId").val(Cookies.get('sessionId'));
     $(".sessionDisconnected").hide();
     $(".sessionConnected").show();
+    checkQueueEmpty();
 
-    appHub.invoke("SyncSession", Cookies.get('sessionId'), Cookies.get('userId')).catch(function (err) {
+    appHub.invoke("SyncSession", Cookies.get('sessionId')).catch(function (err) {
         return console.error(err.toString());
     });
 }
@@ -116,6 +136,7 @@ function sessionDisconnected() {
     $(".sessionDisconnected").show();
     $(".createSessionSuccessful").hide();
     $(".createSessionInitial").show();
+    checkQueueEmpty();
 }
 
 function setSessionCookie(sessionId, userId) {

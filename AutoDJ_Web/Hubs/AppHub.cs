@@ -2,6 +2,7 @@
 using AutoDJ_Web.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Distributed;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -57,7 +58,7 @@ namespace AutoDJ_Web.Hubs
             }
         }
 
-        public async Task SyncSession(string sessionId, string userId)
+        public async Task SyncSession(string sessionId)
         {
             if (SessionHandler.IsValidSession(sessionId))
             {
@@ -65,7 +66,7 @@ namespace AutoDJ_Web.Hubs
                 PlayerModel myPlayer = SessionHandler.GetPlayer(sessionId);
 
                 if (myQueue.Queue.Count > 0)
-                    await Clients.Caller.SendAsync("SyncQueue", sessionId, myQueue.Queue);
+                    await Clients.Caller.SendAsync("SyncQueue", myQueue.Queue);
 
                 if (myPlayer.VideoId != null)
                     await Clients.Caller.SendAsync("SyncPlayer", myPlayer.GetVideoDetails(), myPlayer.GetCurrentTime());
@@ -77,6 +78,38 @@ namespace AutoDJ_Web.Hubs
             SessionHandler.LeaveSession(sessionId, userId);
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, sessionId);
             await Clients.Caller.SendAsync("SessionLeft");
+        }
+
+        public async Task MigrateClientQueue(string sessionId, string queue)
+        {
+            if (SessionHandler.IsValidSession(sessionId))
+            {
+                QueueModel myQueue = SessionHandler.GetQueue(sessionId);
+                string[] charDelimiters = new string[] { "\",\"", ",[\"", "\"],", "],[" };
+                queue = queue.Replace("[[", "");
+                queue = queue.Replace("]]", "");
+                string[] values = queue.Split(charDelimiters, StringSplitOptions.RemoveEmptyEntries);
+
+                for(int i = 0; i < values.Length; i += 8)
+                {
+                    VideoModel video = new VideoModel(values[i + 1], values[i + 2], values[i + 3], values[i + 4], values[i + 5], values[i + 6]);
+                    QueueItemModel queueItem = new QueueItemModel(myQueue.NextId(), video, int.Parse(values[i + 7]));
+                    myQueue.Queue.Add(queueItem);
+                }
+                await Clients.Caller.SendAsync("QueueMigrated");
+            }
+        }
+
+        public void MigrateClientPlayer(string sessionId, List<string> videoDetails)
+        {
+            if (SessionHandler.IsValidSession(sessionId))
+            {
+                PlayerModel myPlayer = SessionHandler.GetPlayer(sessionId);
+                myPlayer.VideoId = videoDetails[0];
+                myPlayer.VideoName = videoDetails[1];
+                myPlayer.TotalSeconds = int.Parse(videoDetails[2]);
+                myPlayer.Start();
+            }
         }
 
         public async Task PingServer(string userId)
@@ -118,10 +151,10 @@ namespace AutoDJ_Web.Hubs
             {
                 QueueModel myQueue = SessionHandler.GetQueue(sessionId);
                 VideoModel video = new VideoModel(videoData[0], videoData[1], videoData[2], videoData[3], videoData[4], videoData[5]);
-                QueueItemModel item = new QueueItemModel(video, myQueue.NextId());
+                QueueItemModel item = new QueueItemModel(myQueue.NextId(), video, 0);
                 myQueue.Queue.Add(item);
                 await Clients.Caller.SendAsync("Cancel");
-                await Clients.Group(sessionId).SendAsync("AddToQueue", item, sessionId);
+                await Clients.Group(sessionId).SendAsync("AddToQueue", item);
             }
         }
 
@@ -135,16 +168,23 @@ namespace AutoDJ_Web.Hubs
             }
         }
 
-        public async Task Duration(string sessionId)
+        public async Task Duration(string sessionId, string[] clientDuration)
         {
+            int duration = 0;
             if (SessionHandler.IsValidSession(sessionId))
             {
                 QueueModel myQueue = SessionHandler.GetQueue(sessionId);
-                int duration = myQueue.GetDurationSeconds();
-                int hrs = (int)Math.Floor((double)duration / 3600);
-                int mins = (int)Math.Floor(((double)duration / 60) % 60);
-                int secs = duration % 60;
+                duration = QueueModel.GetDurationSeconds(myQueue.GetDurationList());
+            }
+            else if(sessionId == "" && clientDuration != null)
+                duration = QueueModel.GetDurationSeconds(clientDuration);
 
+            int hrs = (int)Math.Floor((double)duration / 3600);
+            int mins = (int)Math.Floor(((double)duration / 60) % 60);
+            int secs = duration % 60;
+
+            if(SessionHandler.IsValidSession(sessionId))
+            {
                 if (hrs != 0)
                     await Clients.Group(sessionId).SendAsync("SetQueueDuration", hrs + " hrs " + mins + " mins " + secs + " secs");
                 else if (mins != 0)
@@ -152,6 +192,16 @@ namespace AutoDJ_Web.Hubs
                 else
                     await Clients.Group(sessionId).SendAsync("SetQueueDuration", secs + " secs");
             }
+            else
+            {
+                if (hrs != 0)
+                    await Clients.Caller.SendAsync("SetQueueDuration", hrs + " hrs " + mins + " mins " + secs + " secs");
+                else if (mins != 0)
+                    await Clients.Caller.SendAsync("SetQueueDuration", mins + " mins " + secs + " secs");
+                else
+                    await Clients.Caller.SendAsync("SetQueueDuration", secs + " secs");
+            }
+            
         }
 
         public async Task AddVote(string sessionId, int itemId)

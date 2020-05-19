@@ -36,12 +36,22 @@ namespace AutoDJ_Web.Models
             Queue.RemoveAt(0);
         }
 
-        public int GetDurationSeconds()
+        public string[] GetDurationList()
+        {
+            string[] durations = new string[Queue.Count];
+
+            for(int i = 0; i < Queue.Count; i++)
+                durations[i] = Queue[i].Video.Duration;
+
+            return durations;
+        }
+
+        public static int GetDurationSeconds(string[] songDurations)
         {
             int duration = 0;
-            foreach(QueueItemModel item in Queue)
+            foreach(string item in songDurations)
             {
-                string[] minsecs = item.Video.Duration.Split(":");
+                string[] minsecs = item.Split(":");
                 duration += (int.Parse(minsecs[0]) * 60) + int.Parse(minsecs[1]);
             }
             return duration;
