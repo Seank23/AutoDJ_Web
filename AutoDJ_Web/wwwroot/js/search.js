@@ -1,19 +1,7 @@
 ﻿var searchResults;
 var resultIndex = -1;
 
-var appHub = new signalR.HubConnectionBuilder().withUrl("/appHub").build();
-
 document.getElementById("searchBtn").disabled = true;
-
-appHub.start().then(function () {
-
-    appHub.invoke("SyncSession").catch(function (err) {
-        return console.error(err.toString());
-    });
-    document.getElementById("searchBtn").disabled = false;
-}).catch(function (err) {
-    return console.error(err.toString());
-});
 
 appHub.on("Search", (results) => {
 
@@ -90,7 +78,16 @@ function onAddToQueue() {
 
     var result = searchResults[resultIndex];
     var videoData = [result.videoId.toString(), result.name.toString(), result.channel.toString(), result.publishedDate.toString(), result.duration.toString(), result.thumbnail.toString()];
-    appHub.invoke("AddToQueue", videoData).catch(function (err) {
-        return console.error(err.toString());
-    });
+
+    if (Cookies.get('sessionId') != "") {
+        appHub.invoke("AddToQueue", Cookies.get('sessionId'), Cookies.get('userId'), videoData).catch(function (err) {
+            return console.error(err.toString());
+        });
+    }
+    else {
+        var queueItem = [clientQueue.length, videoData, 0];
+        clientQueue.push(queueItem);
+        cancelSearch();
+        addToQueue(queueItem);
+    }
 }

@@ -14,30 +14,36 @@ function setVolume(myVolume) {
     setPlayerVolume(myVolume);
 }
 
-appHub.on("Play", (result) => {
+appHub.on("Play", (result) => { play(result); });
+
+appHub.on("Stop", () => { stopClient(); });
+
+function play(result) {
 
     if (result == "paused") {
         $(".button.play").removeClass("pause");
+        playerState = "playing";
         pausePlayer();
     }
     else if (result == "playing") {
         $(".button.play").addClass("pause");
+        playerState = "paused";
         playPlayer();
     }
     else {
         setupControlsOnPlay();
         startPlayer(result);
     }
-});
+}
 
-appHub.on("Stop", () => {
+function stopClient() {
 
     $(".button.play").removeClass('pause');
     document.getElementById("stopButton").disabled = true;
     document.getElementById("skipButton").disabled = true;
     checkQueueEmpty(true);
     disposePlayer();
-});
+}
 
 function setupControlsOnPlay() {
 
@@ -48,16 +54,24 @@ function setupControlsOnPlay() {
 
 function playClicked() {
 
-    appHub.invoke("Play").catch(function (err) {
-        return console.error(err.toString());
-    });
+    if (Cookies.get('sessionId') != "") {
+        appHub.invoke("Play", Cookies.get('sessionId')).catch(function (err) {
+            return console.error(err.toString());
+        });
+    }
+    else
+        play(playerState);
 }
 
 function stopClicked() {
 
-    appHub.invoke("Stop").catch(function (err) {
-        return console.error(err.toString());
-    });
+    if (Cookies.get('sessionId') != "") {
+        appHub.invoke("Stop", Cookies.get('sessionId')).catch(function (err) {
+            return console.error(err.toString());
+        });
+    }
+    else
+        stopClient();
 }
 
 function skipClicked() {

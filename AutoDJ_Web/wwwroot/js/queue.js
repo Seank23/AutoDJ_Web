@@ -2,9 +2,83 @@
 var curHeight = 0;
 var curTop = topPos;
 
+var clientQueue = [];
+
 appHub.on("AddToQueue", (queueItem) => { addToQueue(queueItem); });
 
-appHub.on("UpdateOrder", (orderList) => {
+appHub.on("SetRating", (rating, id) => { setRating(rating, id) });
+
+appHub.on("UpdateOrder", (orderList) => { updateOrderClient(orderList); });
+
+appHub.on("RemoveItem", (id) => { removeItem(id); });
+
+appHub.on("SetQueueDuration", (duration) => {
+
+    document.getElementById("queueTime").textContent = duration;
+
+    if ($("#queueContainer").children().length == 1)
+        document.getElementById("songCount").textContent = $("#queueContainer").children().length + " song - ";
+    else
+        document.getElementById("songCount").textContent = $("#queueContainer").children().length + " songs - ";
+});
+
+appHub.on("SyncQueue", (queue) => {
+
+    for (i = 0; i < queue.length; i++) {
+        addToQueue(queue[i]);
+    }
+});
+
+appHub.on("QueueMigrated", () => {
+
+    clearQueue();
+    sessionConnected();
+});
+
+function addToQueue(queueItem) {
+
+    console.log(queueItem);
+    $("#queueEmpty").hide();
+    document.getElementById("playButton").disabled = false;
+    if (player != null)
+        document.getElementById("skipButton").disabled = false;
+
+    var url = "";
+    var itemId = "";
+    if (Cookies.get('sessionId') == "") {
+        url = `/QueueItemTemplate?id=${queueItem[0]}&rating=${queueItem[2]}&videoId=${queueItem[1][0]}&videoName=${queueItem[1][1]}&videoChannel=${queueItem[1][2]}&videoDate=${queueItem[1][3]}&videoDuration=${queueItem[1][4]}&videoThumbnail=${queueItem[1][5]}`;
+        itemId = "item" + queueItem[0];
+    }
+    else {
+        url = `/QueueItemTemplate?id=${queueItem['id']}&rating=${queueItem['rating']}&videoId=${queueItem['video']['videoId']}&videoName=${queueItem['video']['name']}&videoChannel=${queueItem['video']['channel']}&videoDate=${queueItem['video']['publishedDate']}&videoDuration=${queueItem['video']['duration']}&videoThumbnail=${queueItem['video']['thumbnail']}`;
+        itemId = "item" + queueItem['id'];
+    }
+    url = url.split(' ').join('%20');
+
+    var queueContainer = document.getElementById("queueContainer");
+    var itemContainer = document.createElement("div");
+    itemContainer.id = itemId
+    itemContainer.classList.add("queueItem");
+    itemContainer.style.top = curTop + "px";
+    queueContainer.appendChild(itemContainer);
+    $("#" + itemId).load(url);
+
+    $(queueContainer).show();
+    setQueueDuration();
+
+    $(itemContainer).fadeIn(500);
+    $(queueContainer).animate({ "height": curHeight + 70 }, 200);
+    curHeight += 70;
+    curTop += 70;
+}
+
+function setRating(rating, id) {
+
+    document.getElementById("addVote_" + id).textContent = "Vote (" + rating + ")";
+    updateOrder();
+}
+
+function updateOrderClient(orderList) {
 
     var items = $("#queueContainer").children();
     var orderDict = {};
@@ -18,26 +92,9 @@ appHub.on("UpdateOrder", (orderList) => {
 
         $(myItem).animate({ "top": topPos + orderDict[id] * 70 }, 200);
     }
-});
+}
 
-appHub.on("SetQueueDuration", (duration) => {
-
-    document.getElementById("queueTime").textContent = duration;
-
-    if ($("#queueContainer").children().length == 1)
-        document.getElementById("songCount").textContent = $("#queueContainer").children().length + " song - ";
-    else
-        document.getElementById("songCount").textContent = $("#queueContainer").children().length + " songs - ";
-});
-
-appHub.on("SetRating", (rating, id) => {
-
-    console.log(rating);
-    document.getElementById("addVote_" + id).textContent = "Vote (" + rating + ")";
-    updateOrder();
-});
-
-appHub.on("RemoveItem", (id) => {
+function removeItem(id) {
 
     $("#item" + id).fadeOut(500, function () {
         animateQueueMove();
@@ -45,56 +102,42 @@ appHub.on("RemoveItem", (id) => {
         setQueueDuration();
         if (!checkQueueEmpty(false))
             updateOrder();
-    }); 
-});
-
-appHub.on("SyncQueue", (queue) => {
-
-    for (i = 0; i < queue.length; i++) {
-        addToQueue(queue[i]);
-    }
-});
-
-function addToQueue(queueItem) {
-
-    console.log(queueItem);
-    $("#queueEmpty").hide();
-    document.getElementById("playButton").disabled = false;
-    if (player != null)
-        document.getElementById("skipButton").disabled = false;
-
-    var queueContainer = document.getElementById("queueContainer");
-    var itemContainer = document.createElement("div");
-    var itemId = "item" + queueItem['id'];
-    itemContainer.id = itemId
-    itemContainer.classList.add("queueItem");
-    itemContainer.style.top = curTop + "px";
-    queueContainer.appendChild(itemContainer);
-    $("#" + itemId).load("/QueueItemTemplate?id=" + queueItem['id']);
-    $(queueContainer).show();
-    setQueueDuration();
-
-    $(itemContainer).fadeIn(500);
-    $(queueContainer).animate({ "height": curHeight + 70 }, 200);
-    curHeight += 70;
-    curTop += 70;
-    return 1;
+    });
 }
 
 function updateOrder() {
 
-    appHub.invoke("Order").catch(function (err) {
-        return console.error(err.toString());
-    });
+    if (Cookies.get('sessionId')) {
+        appHub.invoke("Order", Cookies.get('sessionId')).catch(function (err) {
+            return console.error(err.toString());
+        });
+    }
+    else {
+        clientQueue.sort(function (a, b) {
+            return parseInt(b[2]) - parseInt(a[2]);
+        });
+        var orderList = [];
+        for (i = 0; i < clientQueue.length; i++)
+            orderList.push(clientQueue[i][0]);
+        updateOrderClient(orderList);
+    }
 }
 
 function setQueueDuration() {
 
     if ($("#queueContainer").children().length != 0) {
 
-        appHub.invoke("Duration").catch(function (err) {
-            return console.error(err.toString());
-        });
+        if (Cookies.get('sessionId') != "") {
+            appHub.invoke("Duration", Cookies.get('sessionId'), null).catch(function (err) {
+                return console.error(err.toString());
+            });
+        }
+        else {
+            var list = getDurationList();
+            appHub.invoke("Duration", Cookies.get('sessionId'), list).catch(function (err) {
+                return console.error(err.toString());
+            });
+        }
     }
     else {
         document.getElementById("queueTime").textContent = "";
@@ -104,19 +147,40 @@ function setQueueDuration() {
 
 function addVote(id) {
 
-    appHub.invoke("AddVote", id).catch(function (err) {
-        return console.error(err.toString());
-    });
+    if (Cookies.get('sessionId') != "") {
+        appHub.invoke("AddVote", Cookies.get('sessionId'), id).catch(function (err) {
+            return console.error(err.toString());
+        });
+    }
+    else {
+        var item = clientQueue.find(function (item) {
+            return parseInt(item[0]) == id;
+        });
+        item[2]++;
+        setRating(item[2], id);
+    }
 }
 
 function remove(id) {
 
-    appHub.invoke("Remove", id).catch(function (err) {
-        return console.error(err.toString());
-    });
+    if (Cookies.get('sessionId') != "") {
+        appHub.invoke("Remove", Cookies.get('sessionId'), id).catch(function (err) {
+            return console.error(err.toString());
+        });
+    }
+    else {
+        for (i = 0; i < clientQueue.length; i++) {
+            if (clientQueue[i][0] == id)
+                clientQueue.splice(i, 1);
+        }
+        removeItem(id);
+    }
 }
 
 function popFromQueue() {
+
+    if (Cookies.get('sessionId') == "")
+        clientQueue.splice(0, 1);
 
     var queue = $("#queueContainer").children();
     if (queue.length > 0) {
@@ -161,5 +225,25 @@ function animateQueueMove() {
     $(queueContainer).animate({ "height": curHeight - 70 }, 200);
     curHeight -= 70;
     curTop -= 70;
+}
+
+function getDurationList() {
+
+    var durations = []
+    for (i = 0; i < clientQueue.length; i++)
+        durations.push(clientQueue[i][1][4])
+    return durations;
+}
+
+function clearQueue() {
+
+    clientQueue = [];
+    var queue = $("#queueContainer").children();
+    for (i = 0; i < queue.length; i++) {
+        queue[i].remove();
+        animateQueueMove();
+    }
+    document.getElementById("queueTime").textContent = "";
+    document.getElementById("songCount").textContent = "";
 }
 

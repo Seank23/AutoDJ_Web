@@ -6,6 +6,7 @@ using AutoDJ_Web.Data;
 using AutoDJ_Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Newtonsoft.Json;
 
 namespace AutoDJ_Web.Pages
 {
@@ -19,10 +20,11 @@ namespace AutoDJ_Web.Pages
         {
             dbHandler = new DBHandler(context);
         }
-
-        public void OnGet(int id)
+        
+        public void OnGet(int id, int rating, string videoId, string videoName, string videoChannel, string videoDate, string videoDuration, string videoThumbnail)
         {
-            MyItem = QueueModel.Queue.Where(item => item.Id == id).First();
+            VideoModel video = new VideoModel(videoId, videoName, videoChannel, videoDate, videoDuration, videoThumbnail);
+            MyItem = new QueueItemModel(id, video, rating);
         }
     }
 }

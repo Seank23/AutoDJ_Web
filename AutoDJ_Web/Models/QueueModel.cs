@@ -5,23 +5,23 @@ using System.Threading.Tasks;
 
 namespace AutoDJ_Web.Models
 {
-    public static class QueueModel
+    public class QueueModel
     {
-        private static int id = -1;
-        public static List<QueueItemModel> Queue { get; set; } = new List<QueueItemModel>();
+        private int id = -1;
+        public List<QueueItemModel> Queue { get; set; } = new List<QueueItemModel>();
 
-        public static int NextId()
+        public int NextId()
         {
             id++;
             return id;
         }
 
-        public static void OrderQueue()
+        public void OrderQueue()
         {
             Queue = Queue.OrderByDescending(item => item.Rating).ToList();
         }
 
-        public static List<int> GetOrderList()
+        public List<int> GetOrderList()
         {
             List<int> orderList = new List<int>();
 
@@ -31,17 +31,27 @@ namespace AutoDJ_Web.Models
             return orderList;
         }
 
-        public static void PopFromQueue()
+        public void PopFromQueue()
         {
             Queue.RemoveAt(0);
         }
 
-        public static int GetDurationSeconds()
+        public string[] GetDurationList()
+        {
+            string[] durations = new string[Queue.Count];
+
+            for(int i = 0; i < Queue.Count; i++)
+                durations[i] = Queue[i].Video.Duration;
+
+            return durations;
+        }
+
+        public static int GetDurationSeconds(string[] songDurations)
         {
             int duration = 0;
-            foreach(QueueItemModel item in Queue)
+            foreach(string item in songDurations)
             {
-                string[] minsecs = item.Video.Duration.Split(":");
+                string[] minsecs = item.Split(":");
                 duration += (int.Parse(minsecs[0]) * 60) + int.Parse(minsecs[1]);
             }
             return duration;
