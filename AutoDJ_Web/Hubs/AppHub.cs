@@ -278,10 +278,10 @@ namespace AutoDJ_Web.Hubs
                     else
                         await Clients.Group(sessionId).SendAsync("NextSong", myPlayer.GetVideoDetails());
                 }
-            }
-            else
-            {
-                await DisposePlayer(sessionId);
+                else
+                {
+                    await DisposePlayer(sessionId);
+                }
             }
         }
 

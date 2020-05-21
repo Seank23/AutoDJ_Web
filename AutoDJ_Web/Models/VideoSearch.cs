@@ -23,7 +23,7 @@ namespace AutoDJ_Web
             searchListRequest.Q = searchTerm;
             searchListRequest.MaxResults = 5;
             searchListRequest.Type = "video";
-            searchListRequest.VideoCategoryId = "10";
+            //searchListRequest.VideoCategoryId = "10";
 
             var searchListResponse = await searchListRequest.ExecuteAsync();
 

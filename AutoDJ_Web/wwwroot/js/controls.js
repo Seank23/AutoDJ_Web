@@ -42,7 +42,8 @@ function stopClient() {
     document.getElementById("stopButton").disabled = true;
     document.getElementById("skipButton").disabled = true;
     checkQueueEmpty(true);
-    disposePlayer();
+    if(player != null)
+        disposePlayer();
 }
 
 function setupControlsOnPlay() {
