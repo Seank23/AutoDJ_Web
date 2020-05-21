@@ -111,6 +111,25 @@ body {
     font-size: 1rem;
 }
 
+.overlay {
+    background: #808080;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    opacity: 0.85;
+    z-index: 9999;
+}
+
+#loadingRoller div:after {
+    background: white;
+}
+
+#loadingText {
+    color: white;
+}
+
 @media only screen and (max-width: 1200px) {
     .section {
         margin: 10px;

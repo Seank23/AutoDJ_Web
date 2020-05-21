@@ -70,6 +70,8 @@ namespace AutoDJ_Web.Hubs
 
                 if (myPlayer.VideoId != null)
                     await Clients.Caller.SendAsync("SyncPlayer", myPlayer.GetVideoDetails(), myPlayer.GetCurrentTime());
+
+                await Clients.Caller.SendAsync("SessionSynced");
             }
         }
 

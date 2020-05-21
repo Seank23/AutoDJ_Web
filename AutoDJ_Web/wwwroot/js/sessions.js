@@ -11,6 +11,7 @@ appHub.start().then(function () {
     document.getElementById("searchBtn").disabled = false;
     document.getElementById("createSessionBtn").disabled = false;
     document.getElementById("joinSessionBtn").disabled = false;
+    $(".overlay").fadeOut(200);
 }).catch(function (err) {
     return console.error(err.toString());
 });
@@ -74,6 +75,10 @@ appHub.on("SessionLeft", () => {
     sessionDisconnected();
 });
 
+appHub.on("SessionSynced", () => {
+    $(".overlay").fadeOut(200);
+});
+
 appHub.on("PingReturned", (sessionId, userId) => {
     setSessionCookie(sessionId, userId);
 });
@@ -119,6 +124,8 @@ function leaveSession() {
 
 function sessionConnected() {
 
+    $("#loadingText").html("Syncing Session...")
+    $(".overlay").fadeIn(200);
     $("#navSessionId").html(Cookies.get('sessionId'));
     $("#displaySessionId").val(Cookies.get('sessionId'));
     $(".sessionDisconnected").hide();
