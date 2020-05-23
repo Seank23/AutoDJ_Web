@@ -1,5 +1,5 @@
-﻿const topPos = 90
-var curHeight = 0;
+﻿const topPos = $("#queueCardBody").outerHeight() + 20;
+var curHeight = -20;
 var curTop = topPos;
 
 var clientQueue = [];

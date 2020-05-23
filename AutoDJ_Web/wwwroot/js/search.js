@@ -31,6 +31,7 @@ function cancelSearch() {
     $('.search-body').removeClass('expand');
     document.getElementById("searchBtn").disabled = false;
     document.getElementById("cancel").disabled = true;
+    document.getElementById("searchText").disabled = false;
     document.getElementById("searchText").value = "";
 }
 
@@ -64,6 +65,7 @@ function onSearch() {
 
     document.getElementById("cancel").disabled = false;
     var term = document.getElementById("searchText").value;
+    document.getElementById("searchText").disabled = true;
 
     $('.search-body').addClass('expand');
     $("#roller").fadeIn(50);

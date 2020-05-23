@@ -105,7 +105,7 @@ function initPlayer(video, time) {
         playerVars: { "start": time, "autoplay": 1, "disablekb": 1, "fs": 0, "rel": 0, "modestbranding": 1, "enablejsapi": 1 },
         events: { "onReady": onPlayerReady, "onStateChange": onPlayerStateChange }
     });
-    $('#player').attr("style", "width: 100%; height: 33vh;");
+    //$('#player').attr("style", "width: 100%; height: 33vh;");
     $("#playerCard").fadeIn(500);
 }
 

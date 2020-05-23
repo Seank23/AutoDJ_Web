@@ -104,7 +104,7 @@ body {
 }
 
 .section {
-    margin: 50px;
+    margin: 25px 50px;
 }
 
 .has-text {
@@ -141,5 +141,30 @@ body {
 
     #addToQueue {
         width: 120px;
+    }
+
+    #playerCardRow {
+        width: auto;
+    }
+}
+
+@media only screen and (min-width: 1200px) {
+    #playerCardRow {
+        width: 170%;
+    }
+
+    #playerCard {
+        margin-top: 0;
+    }
+}
+
+#player {
+    width: 100%;
+    height: 33vh;
+}
+
+@media only screen and (min-width: 615px) {
+    #player {
+        height: 50vh;
     }
 }

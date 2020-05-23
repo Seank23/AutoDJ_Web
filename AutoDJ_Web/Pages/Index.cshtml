@@ -25,7 +25,7 @@
     <div class="col-xl-5 col-sm-12">
         <div class="row">
             <div class="col p-0 section">
-                <div class="card shadow" style="min-width: 300px">
+                <div class="card shadow" style="min-width: 375px">
                     <div class="card-header">
                         <h5>Add Song<br /><small>Search YouTube for a song to add to the queue</small></h5>
                     </div>
@@ -36,7 +36,7 @@
                                 <input type="text" class="form-control has-text" id="searchText" placeholder="Search" style="width: 100%;">
                             </div>
                             <div class="float-right mt-1 mb-1">
-                                <button type="button" class="btn btn-primary mr-1 has-text" id="searchBtn" onclick="onSearch()">Search</button>
+                                <button type="button" class="btn btn-primary mr-1 has-text" id="searchBtn" onclick="onSearch()" style="width: auto">Search</button>
                                 <button type="button" class="btn btn-danger has-text" id="cancel" onclick="cancelSearch()" disabled>Cancel</button>
                             </div>
                         </form>
@@ -84,7 +84,7 @@
             </div>
         </div>
 
-        <div class="row">
+        <div id="playerCardRow" class="row">
             <div id="playerCard" class="col p-0 section" style="display: none;">
                 <div class="card shadow" style="min-width: 300px">
                     <div class="card-header">
@@ -135,7 +135,7 @@
 
                 </div>
             </div>
-            <div class="card-body">
+            <div id="queueCardBody" class="card-body">
                 <div id="queueEmpty" class="row justify-content-center">
                     <h5 class="muted">Queue is empty</h5>
                 </div>
