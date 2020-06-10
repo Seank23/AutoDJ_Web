@@ -15,7 +15,8 @@ namespace AutoDJ_Web
         {
             var youtubeService = new YouTubeService(new BaseClientService.Initializer()
             {
-                ApiKey = "AIzaSyC0pX3JjTzni8IyMnhLImoU2QaJy_6SPuM",
+                //ApiKey = "AIzaSyBLnKqOiA4NGKpDKNcZt6EbsYVN_u56C2I", // Production
+                ApiKey = "AIzaSyAVSZRciCUhLhssGCRqVGRpQchkQkACjpk", // Development
                 ApplicationName = "AutoDJ_Web.VideoSearch"
             });
 

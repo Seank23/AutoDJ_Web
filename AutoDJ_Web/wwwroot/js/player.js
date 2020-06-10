@@ -105,7 +105,6 @@ function initPlayer(video, time) {
         playerVars: { "start": time, "autoplay": 1, "disablekb": 1, "fs": 0, "rel": 0, "modestbranding": 1, "enablejsapi": 1 },
         events: { "onReady": onPlayerReady, "onStateChange": onPlayerStateChange }
     });
-    //$('#player').attr("style", "width: 100%; height: 33vh;");
     $("#playerCard").fadeIn(500);
 }
 
@@ -145,4 +144,13 @@ function intToTime(seconds) {
         return Math.floor(seconds / 60) + ":0" + (seconds % 60);
     else
         return Math.floor(seconds / 60) + ":" + (seconds % 60);
+}
+
+function isPlayerStateVaild() {
+
+    if (player != null) {
+        if (player.getCurrentTime() >= player.getDuration() - 1)
+            return false;
+    }
+    return true;
 }

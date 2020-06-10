@@ -55,6 +55,9 @@ function setupControlsOnPlay() {
 
 function playClicked() {
 
+    if (!isPlayerStateVaild)
+        return;
+
     if (Cookies.get('sessionId') != "") {
         appHub.invoke("Play", Cookies.get('sessionId')).catch(function (err) {
             return console.error(err.toString());
@@ -65,6 +68,9 @@ function playClicked() {
 }
 
 function stopClicked() {
+
+    if (!isPlayerStateVaild)
+        return;
 
     if (Cookies.get('sessionId') != "") {
         appHub.invoke("Stop", Cookies.get('sessionId')).catch(function (err) {
@@ -77,5 +83,7 @@ function stopClicked() {
 
 function skipClicked() {
 
+    if (!isPlayerStateVaild)
+        return;
     playNextSong();
 }
