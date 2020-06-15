@@ -122,23 +122,44 @@ namespace AutoDJ_Web.Hubs
             await Clients.Caller.SendAsync("PingReturned", id[0], id[1]);
         }
 
-        public async Task Search(string searchTerm)
+        public async Task Search(string searchTerm, bool isPlaylist)
         {
             try
             {
                 searchTerm = searchTerm.ToLower();
-                List<VideoModel> videos = new List<VideoModel>();
+                string type = "_video";
 
-                if (_cache.GetString(searchTerm) == null)
+                if (isPlaylist)
+                    type = "_playlist";
+
+                if (_cache.GetString(searchTerm + type) == null)
                 {
-                    videos = await search.Search(searchTerm, _cache);
+                    if (isPlaylist)
+                    {
+                        List<PlaylistModel> results = await search.SearchPlaylist(searchTerm, _cache);
+                        await Clients.Caller.SendAsync("Search", results, isPlaylist);
+                    }
+                    else
+                    {
+                        List<VideoModel> results = await search.SearchVideo(searchTerm, _cache);
+                        await Clients.Caller.SendAsync("Search", results, isPlaylist);
+                    }    
                 }
                 else
                 {
-                    List<string[]> result = search.ParseVideoDetailsString(_cache.GetString(searchTerm));
-                    videos = search.PopulateVideoModel(result);
-                }
-                await Clients.Caller.SendAsync("Search", videos);
+                    List<string[]> result = search.ParseVideoDetailsString(_cache.GetString(searchTerm + type));
+
+                    if (isPlaylist)
+                    {
+                        List<PlaylistModel> results = search.PopulatePlaylistModel(result);
+                        await Clients.Caller.SendAsync("Search", results, isPlaylist);
+                    }
+                    else
+                    {
+                        List<VideoModel> results = search.PopulateVideoModel(result);
+                        await Clients.Caller.SendAsync("Search", results, isPlaylist);
+                    }
+                }  
             }
             catch (Exception e)
             {

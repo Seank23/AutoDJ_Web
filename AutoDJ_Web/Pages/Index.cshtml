@@ -31,13 +31,15 @@
                     </div>
                     <div class="card-body search-body">
                         <form id="searchForm" class="form-inline" method="POST">
-                            <div class="col-7 col-sm-8 b-0 p-0 mt-1 mb-1" style="margin-right: 3%">
+                            <div class="col mb-0 p-0 mt-1 mb-1" style="margin-right: 3%">
                                 <label class="sr-only" for="searchText">Search</label>
                                 <input type="text" class="form-control has-text" id="searchText" placeholder="Search" style="width: 100%;">
                             </div>
-                            <div class="float-right mt-1 mb-1">
-                                <button type="button" class="btn btn-primary mr-1 has-text" id="searchBtn" onclick="onSearch()" style="width: auto">Search</button>
-                                <button type="button" class="btn btn-danger has-text" id="cancel" onclick="cancelSearch()" disabled>Cancel</button>
+                            <div class="row">
+                                <div class="col mt-1 mb-1">
+                                    <input type="checkbox" id="playlistToggle" data-toggle="toggle" data-style="myToggle" data-on="Playlist" data-off="Video" data-offstyle="light" data-onstyle="light">
+                                    <button type="button" class="btn btn-primary mr-1 has-text" id="searchBtn" onclick="onSearch()" style="width: auto">Search</button>
+                                </div>
                             </div>
                         </form>
 
@@ -48,10 +50,10 @@
                         <div id="details" class="mt-3" style="display:none;">
                             <div class="row">
                                 <div class="col-7 col-sm-8 has-text" style="margin-right: 3%">
-                                    <h5 class="text-muted">Video <span id="resultIndex"></span> of <span id="numResults"></span>:</h5>
+                                    <h5 class="text-muted"><span id="resultType"></span>: <span id="resultIndex"></span> of <span id="numResults"></span>:</h5>
                                     <p><b>Name:</b> <span id="resultName"></span></p>
                                     <p><b>Channel:</b> <span id="resultChannel"></span></p>
-                                    <p><b>Length:</b> <span id="resultLength"></span></p>
+                                    <p><b><span id="lengthOrDescription"></span>:</b> <span id="resultLengthOrDescription"></span></p>
                                     <p><b>Date Published:</b> <span id="resultDate"></span></p>
                                 </div>
 

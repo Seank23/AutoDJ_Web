@@ -11,7 +11,7 @@ namespace AutoDJ_Web
 {
     public class VideoSearch
     {
-        public async Task<List<VideoModel>> Search(string searchTerm, IDistributedCache cache)
+        public async Task<List<VideoModel>> SearchVideo(string searchTerm, IDistributedCache cache)
         {
             var youtubeService = new YouTubeService(new BaseClientService.Initializer()
             {
@@ -47,8 +47,39 @@ namespace AutoDJ_Web
             }
 
             var options = new DistributedCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromDays(7));
-            cache.SetString(searchTerm, VideoDetailsToString(videoDetails), options);
+            cache.SetString(searchTerm + "_video", VideoDetailsToString(videoDetails), options);
             return PopulateVideoModel(videoDetails);
+        }
+
+        public async Task<List<PlaylistModel>> SearchPlaylist(string searchTerm, IDistributedCache cache)
+        {
+            var youtubeService = new YouTubeService(new BaseClientService.Initializer()
+            {
+                //ApiKey = "AIzaSyBLnKqOiA4NGKpDKNcZt6EbsYVN_u56C2I", // Production
+                ApiKey = "AIzaSyAVSZRciCUhLhssGCRqVGRpQchkQkACjpk", // Development
+                ApplicationName = "AutoDJ_Web.VideoSearch"
+            });
+
+            var searchListRequest = youtubeService.Search.List("snippet");
+            searchListRequest.Q = searchTerm;
+            searchListRequest.MaxResults = 5;
+            searchListRequest.Type = "playlist";
+
+            var searchListResponse = await searchListRequest.ExecuteAsync();
+
+            List<string[]> playlistDetails = new List<string[]>();
+
+            for (int i = 0; i < searchListResponse.Items.Count; i++)
+            {
+                var playlistResult = searchListResponse.Items[i];
+                string[] resultArray = { playlistResult.Id.PlaylistId, playlistResult.Snippet.Title, playlistResult.Snippet.ChannelTitle, playlistResult.Snippet.Description, 
+                                         playlistResult.Snippet.PublishedAt.Value.ToShortDateString(), playlistResult.Snippet.Thumbnails.Default__.Url };
+                playlistDetails.Add(resultArray);
+            }
+
+            var options = new DistributedCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromDays(7));
+            cache.SetString(searchTerm + "_playlist", VideoDetailsToString(playlistDetails), options);
+            return PopulatePlaylistModel(playlistDetails);
         }
 
         public List<VideoModel> PopulateVideoModel(List<string[]> videoDetails)
@@ -61,6 +92,17 @@ namespace AutoDJ_Web
                 myVideos.Add(new VideoModel(details[0], details[1], details[2], details[3], duration, details[5]));
             }
             return myVideos;
+        }
+
+        public List<PlaylistModel> PopulatePlaylistModel(List<string[]> playlistDetails)
+        {
+            List<PlaylistModel> myPlaylists = new List<PlaylistModel>();
+
+            foreach (string[] details in playlistDetails)
+            {
+                myPlaylists.Add(new PlaylistModel(details[0], details[1], details[2], details[3], details[4], details[5]));
+            }
+            return myPlaylists;
         }
 
         public string VideoDetailsToString(List<string[]> details)
