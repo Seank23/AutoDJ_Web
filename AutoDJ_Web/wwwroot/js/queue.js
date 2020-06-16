@@ -4,7 +4,10 @@ var curTop = topPos;
 
 var clientQueue = [];
 
-appHub.on("AddToQueue", (queueItem) => { addToQueue(queueItem); });
+appHub.on("AddToQueue", (queueItem) => {
+    growQueueContainer(1);
+    addToQueue(queueItem);
+});
 
 appHub.on("SetRating", (rating, id) => { setRating(rating, id) });
 
@@ -24,9 +27,19 @@ appHub.on("SetQueueDuration", (duration) => {
 
 appHub.on("SyncQueue", (queue) => {
 
+    growQueueContainer(queue.length);
     for (i = 0; i < queue.length; i++) {
         addToQueue(queue[i]);
     }
+});
+
+appHub.on("QueuePlaylist", (playlist) => {
+
+    growQueueContainer(playlist.length);
+    for (i = 0; i < playlist.length; i++) {
+        addToQueue(playlist[i]);
+    }
+    $(".overlay").fadeOut(200);
 });
 
 appHub.on("QueueMigrated", () => {
@@ -66,10 +79,20 @@ function addToQueue(queueItem) {
     $(queueContainer).show();
     setQueueDuration();
 
-    $(itemContainer).fadeIn(500);
-    $(queueContainer).animate({ "height": curHeight + 70 }, 200);
     curHeight += 70;
     curTop += 70;
+
+    $(itemContainer).fadeIn(500);
+}
+
+function growQueueContainer(numItems) {
+
+    $(queueContainer).animate({ "height": curHeight + (70 * numItems) }, 200);
+}
+
+function shrinkQueueContainer(numItems) {
+
+    $(queueContainer).animate({ "height": curHeight - (70 * numItems) }, 200);
 }
 
 function setRating(rating, id) {
@@ -97,7 +120,11 @@ function updateOrderClient(orderList) {
 function removeItem(id) {
 
     $("#item" + id).fadeOut(500, function () {
-        animateQueueMove();
+
+        shrinkQueueContainer(1);
+        curHeight -= 70;
+        curTop -= 70;
+
         $(this).remove();
         setQueueDuration();
         if (!checkQueueEmpty(false))
@@ -194,7 +221,11 @@ function popFromQueue() {
             }
         }
         $(queue[minIndex]).fadeOut(500, function () {
-            animateQueueMove();
+
+            shrinkQueueContainer(1);
+            curHeight -= 70;
+            curTop -= 70;
+
             $(this).remove();
             updateOrder();
             checkQueueEmpty(false);
@@ -220,13 +251,6 @@ function checkQueueEmpty(onStop) {
         return false;
 }
 
-function animateQueueMove() {
-
-    $(queueContainer).animate({ "height": curHeight - 70 }, 200);
-    curHeight -= 70;
-    curTop -= 70;
-}
-
 function getDurationList() {
 
     var durations = []
@@ -239,9 +263,11 @@ function clearQueue() {
 
     clientQueue = [];
     var queue = $("#queueContainer").children();
+    shrinkQueueContainer(queue.length);
     for (i = 0; i < queue.length; i++) {
         queue[i].remove();
-        animateQueueMove();
+        curHeight -= 70;
+        curTop -= 70;
     }
     document.getElementById("queueTime").textContent = "";
     document.getElementById("songCount").textContent = "";

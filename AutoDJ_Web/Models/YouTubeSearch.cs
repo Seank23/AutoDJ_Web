@@ -9,17 +9,22 @@ using System.Threading.Tasks;
 
 namespace AutoDJ_Web
 {
-    public class VideoSearch
+    public class YouTubeSearch
     {
-        public async Task<List<VideoModel>> SearchVideo(string searchTerm, IDistributedCache cache)
+        private YouTubeService youtubeService;
+        
+        public YouTubeSearch()
         {
-            var youtubeService = new YouTubeService(new BaseClientService.Initializer()
+            youtubeService = new YouTubeService(new BaseClientService.Initializer()
             {
                 //ApiKey = "AIzaSyBLnKqOiA4NGKpDKNcZt6EbsYVN_u56C2I", // Production
                 ApiKey = "AIzaSyAVSZRciCUhLhssGCRqVGRpQchkQkACjpk", // Development
-                ApplicationName = "AutoDJ_Web.VideoSearch"
+                ApplicationName = "AutoDJ_Web.YouTubeSearch"
             });
+        }
 
+        public async Task<List<VideoModel>> SearchVideo(string searchTerm, IDistributedCache cache)
+        {
             var searchListRequest = youtubeService.Search.List("id");
             searchListRequest.Q = searchTerm;
             searchListRequest.MaxResults = 5;
@@ -53,13 +58,6 @@ namespace AutoDJ_Web
 
         public async Task<List<PlaylistModel>> SearchPlaylist(string searchTerm, IDistributedCache cache)
         {
-            var youtubeService = new YouTubeService(new BaseClientService.Initializer()
-            {
-                //ApiKey = "AIzaSyBLnKqOiA4NGKpDKNcZt6EbsYVN_u56C2I", // Production
-                ApiKey = "AIzaSyAVSZRciCUhLhssGCRqVGRpQchkQkACjpk", // Development
-                ApplicationName = "AutoDJ_Web.VideoSearch"
-            });
-
             var searchListRequest = youtubeService.Search.List("snippet");
             searchListRequest.Q = searchTerm;
             searchListRequest.MaxResults = 5;
@@ -72,14 +70,52 @@ namespace AutoDJ_Web
             for (int i = 0; i < searchListResponse.Items.Count; i++)
             {
                 var playlistResult = searchListResponse.Items[i];
-                string[] resultArray = { playlistResult.Id.PlaylistId, playlistResult.Snippet.Title, playlistResult.Snippet.ChannelTitle, playlistResult.Snippet.Description, 
-                                         playlistResult.Snippet.PublishedAt.Value.ToShortDateString(), playlistResult.Snippet.Thumbnails.Default__.Url };
+                string[] resultArray = { playlistResult.Id.PlaylistId, playlistResult.Snippet.Title, playlistResult.Snippet.ChannelTitle, playlistResult.Snippet.PublishedAt.Value.ToShortDateString(), 
+                                         playlistResult.Snippet.Description, playlistResult.Snippet.Thumbnails.Default__.Url };
                 playlistDetails.Add(resultArray);
             }
 
             var options = new DistributedCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromDays(7));
             cache.SetString(searchTerm + "_playlist", VideoDetailsToString(playlistDetails), options);
             return PopulatePlaylistModel(playlistDetails);
+        }
+
+        public async Task<List<VideoModel>> GetPlaylistVideos(string playlistId)
+        {
+            var listRequest = youtubeService.PlaylistItems.List("snippet, contentDetails");
+            listRequest.PlaylistId = playlistId;
+            listRequest.MaxResults = 50;
+
+            var listResponse = await listRequest.ExecuteAsync();
+            var videoListRequest = youtubeService.Videos.List("snippet, contentDetails");
+
+            string pageToken = "";
+            List<string[]> videoDetails = new List<string[]>();
+
+            while (pageToken != null)
+            {
+                string idList = "";
+                foreach (var result in listResponse.Items)
+                    idList += result.ContentDetails.VideoId + ",";
+
+                pageToken = listResponse.NextPageToken;
+                listRequest.PageToken = pageToken;
+                listResponse = await listRequest.ExecuteAsync();
+
+                idList = idList.Substring(0, idList.Length - 1);
+                videoListRequest.Id = idList;
+
+                var videoListResponse = await videoListRequest.ExecuteAsync();
+
+                for (int i = 0; i < videoListResponse.Items.Count; i++)
+                {
+                    var videoResult = videoListResponse.Items[i];
+                    string[] resultArray = { videoResult.Id, videoResult.Snippet.Title, videoResult.Snippet.ChannelTitle, videoResult.Snippet.PublishedAt.Value.ToShortDateString(),
+                                         videoResult.ContentDetails.Duration, videoResult.Snippet.Thumbnails.Default__.Url };
+                    videoDetails.Add(resultArray);
+                }
+            }
+            return PopulateVideoModel(videoDetails);
         }
 
         public List<VideoModel> PopulateVideoModel(List<string[]> videoDetails)

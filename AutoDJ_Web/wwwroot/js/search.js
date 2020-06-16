@@ -110,15 +110,22 @@ function onSearch() {
 function onAddToQueue() {
 
     var result = searchResults[resultIndex];
-    var videoData = [result.videoId.toString(), result.name.toString(), result.channel.toString(), result.publishedDate.toString(), result.duration.toString(), result.thumbnail.toString()];
+    var resultData = [];
+    if (isPlaylist) {
+        resultData = [result.playlistId.toString(), result.name.toString(), result.channel.toString(), result.publishedDate.toString(), result.description.toString(), result.thumbnail.toString()];
+        $("#loadingText").html("Loading Playlist...");
+        $(".overlay").fadeIn(200);
+    }
+    else
+        resultData = [result.videoId.toString(), result.name.toString(), result.channel.toString(), result.publishedDate.toString(), result.duration.toString(), result.thumbnail.toString()];
 
     if (Cookies.get('sessionId') != "") {
-        appHub.invoke("AddToQueue", Cookies.get('sessionId'), Cookies.get('userId'), videoData).catch(function (err) {
+        appHub.invoke("AddToQueue", Cookies.get('sessionId'), Cookies.get('userId'), resultData, isPlaylist).catch(function (err) {
             return console.error(err.toString());
         });
     }
     else {
-        var queueItem = [clientQueue.length, videoData, 0];
+        var queueItem = [clientQueue.length, resultData, 0];
         clientQueue.push(queueItem);
         cancelSearch();
         addToQueue(queueItem);

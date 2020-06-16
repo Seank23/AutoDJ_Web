@@ -14,13 +14,13 @@ namespace AutoDJ_Web.Hubs
     {
         protected DBHandler dbHandler;
         private readonly IDistributedCache _cache;
-        private VideoSearch search;
+        private YouTubeSearch search;
 
         public AppHub(IDistributedCache cache, ApplicationDbContext context)
         {
             _cache = cache;
             dbHandler = new DBHandler(context);
-            search = new VideoSearch();
+            search = new YouTubeSearch();
         }
 
         public async Task CreateSession(string userId)
@@ -168,16 +168,32 @@ namespace AutoDJ_Web.Hubs
             }
         }
 
-        public async Task AddToQueue(string sessionId, string userId, string[] videoData)
+        public async Task AddToQueue(string sessionId, string userId, string[] data, bool isPlaylist)
         {
             if (SessionHandler.GetUsersSession(userId) == sessionId)
             {
                 QueueModel myQueue = SessionHandler.GetQueue(sessionId);
-                VideoModel video = new VideoModel(videoData[0], videoData[1], videoData[2], videoData[3], videoData[4], videoData[5]);
-                QueueItemModel item = new QueueItemModel(myQueue.NextId(), video, 0);
-                myQueue.Queue.Add(item);
+                if (isPlaylist)
+                {
+                    int queueSize = myQueue.Queue.Count;
+                    List<VideoModel> playlistVideos = await search.GetPlaylistVideos(data[0]);
+
+                    foreach(VideoModel video in playlistVideos)
+                    {
+                        QueueItemModel item = new QueueItemModel(myQueue.NextId(), video, 0);
+                        myQueue.Queue.Add(item);
+                    }
+                    await Clients.Caller.SendAsync("QueuePlaylist", myQueue.Queue.Where(item => item.Id >= queueSize).ToArray());
+                }
+                else
+                {
+                    VideoModel video = new VideoModel(data[0], data[1], data[2], data[3], data[4], data[5]);
+                    QueueItemModel item = new QueueItemModel(myQueue.NextId(), video, 0);
+                    myQueue.Queue.Add(item);
+                    await Clients.Group(sessionId).SendAsync("AddToQueue", item);
+                }
                 await Clients.Caller.SendAsync("Cancel");
-                await Clients.Group(sessionId).SendAsync("AddToQueue", item);
+                
             }
         }
 

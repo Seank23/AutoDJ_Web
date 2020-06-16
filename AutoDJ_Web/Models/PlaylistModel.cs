@@ -10,11 +10,11 @@ namespace AutoDJ_Web.Models
         public string PlaylistId { get; set; }
         public string Name { get; set; }
         public string Channel { get; set; }
-        public string Description { get; set; }
         public string PublishedDate { get; set; }
+        public string Description { get; set; }
         public string Thumbnail { get; set; }
 
-        public PlaylistModel(string id, string name, string channel, string description, string published, string thumbnail)
+        public PlaylistModel(string id, string name, string channel, string published, string description, string thumbnail)
         {
             PlaylistId = id;
             Name = name;
