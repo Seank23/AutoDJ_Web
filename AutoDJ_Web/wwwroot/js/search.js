@@ -41,6 +41,7 @@ function cancelSearch() {
     document.getElementById("searchText").disabled = false;
     document.getElementById("searchText").value = "";
     $(".myToggle").addClass("off");
+    isPlaylist = false;
 }
 
 function updateResult(next) {
@@ -96,7 +97,7 @@ function onSearch() {
         $("#roller").fadeIn(50);
 
         var type = false;
-        if ($("#playlistToggle").is(":checked"))
+        if (!$(".myToggle").hasClass("off"))
             type = true;
 
         appHub.invoke("Search", term, type).catch(function (err) {
