@@ -30,7 +30,7 @@ appHub.on("SetQueueDuration", (duration) => {
 appHub.on("SyncQueue", (queue) => {
 
     growQueueContainer(queue.length);
-    for (i = 0; i < queue.length; i++) {
+    for (var i = 0; i < queue.length; i++) {
         addToQueue(queue[i]);
     }
 });
@@ -72,10 +72,17 @@ function addToQueue(queueItem) {
     var url = "";
     var itemId = "";
     if (Cookies.get('sessionId') == "" && !isPlaylist) {
+        for (i = 0; i < queueItem[1].length; i++) {
+            queueItem[1][i] = queueItem[1][i].replace("&", "%26");
+        }
         url = `/QueueItemTemplate?id=${queueItem[0]}&rating=${queueItem[2]}&videoId=${queueItem[1][0]}&videoName=${queueItem[1][1]}&videoChannel=${queueItem[1][2]}&videoDate=${queueItem[1][3]}&videoDuration=${queueItem[1][4]}&videoThumbnail=${queueItem[1][5]}`;
         itemId = "item" + queueItem[0];
     }
     else {
+        var keys = Object.keys(queueItem['video']);
+        for (i = 0; i < keys.length; i++) {
+            queueItem['video'][keys[i]] = queueItem['video'][keys[i]].replace('&', "%26");
+        }
         url = `/QueueItemTemplate?id=${queueItem['id']}&rating=${queueItem['rating']}&videoId=${queueItem['video']['videoId']}&videoName=${queueItem['video']['name']}&videoChannel=${queueItem['video']['channel']}&videoDate=${queueItem['video']['publishedDate']}&videoDuration=${queueItem['video']['duration']}&videoThumbnail=${queueItem['video']['thumbnail']}`;
         itemId = "item" + queueItem['id'];
     }
