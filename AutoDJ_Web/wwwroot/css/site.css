@@ -130,12 +130,29 @@ body {
     color: white;
 }
 
+.toggle.myToggle {
+    width: 75px !important;
+    height: 38px !important;
+}
+
 @media only screen and (max-width: 1200px) {
     .section {
         margin: 10px;
     }
 
     .has-text {
+        font-size: 0.9rem;
+    }
+
+    .toggle.myToggle {
+        height: 31px !important;
+    }
+
+    .toggle-on {
+        font-size: 0.9rem;
+    }
+
+    .toggle-off {
         font-size: 0.9rem;
     }
 

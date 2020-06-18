@@ -1,9 +1,12 @@
 ﻿var searchResults;
 var resultIndex = -1;
 
+var searchClicked = false;
+var isPlaylist = false;
+
 document.getElementById("searchBtn").disabled = true;
 
-appHub.on("Search", (results) => {
+appHub.on("Search", (results, playlist) => {
 
     if (results == -1)
         $("#error").fadeIn(100);
@@ -12,6 +15,7 @@ appHub.on("Search", (results) => {
     else {
         $("#details").fadeIn(100);
         searchResults = results;
+        isPlaylist = playlist;
         updateResult(true);
     }
         
@@ -22,6 +26,10 @@ appHub.on("Cancel", () => { cancelSearch(); });
 
 function cancelSearch() {
 
+    searchClicked = false;
+    $("#searchBtn").html("Search");
+    $("#searchBtn").removeClass("btn-danger");
+    $("#searchBtn").addClass("btn-primary");
     searchResults = null;
     resultIndex = -1;
     $("#details").fadeOut(100);
@@ -30,9 +38,9 @@ function cancelSearch() {
     $("#roller").fadeOut(100);
     $('.search-body').removeClass('expand');
     document.getElementById("searchBtn").disabled = false;
-    document.getElementById("cancel").disabled = true;
     document.getElementById("searchText").disabled = false;
     document.getElementById("searchText").value = "";
+    $(".myToggle").addClass("off");
 }
 
 function updateResult(next) {
@@ -48,9 +56,20 @@ function updateResult(next) {
     document.getElementById("numResults").textContent = searchResults.length;
     document.getElementById("resultName").textContent = result["name"];
     document.getElementById("resultChannel").textContent = result["channel"];
-    document.getElementById("resultLength").textContent = result["duration"];
     document.getElementById("resultDate").textContent = result["publishedDate"];
     $("#resultThumbnail").attr("src", result["thumbnail"]);
+
+    if (isPlaylist) {
+        document.getElementById("resultType").textContent = "Playlist";
+        document.getElementById("lengthOrDescription").textContent = "Description";
+        document.getElementById("resultLengthOrDescription").textContent = result["description"];
+    }
+    else {
+        document.getElementById("resultType").textContent = "Video";
+        document.getElementById("lengthOrDescription").textContent = "Length";
+        document.getElementById("resultLengthOrDescription").textContent = result["duration"];
+    }
+
     if (resultIndex > 0)
         document.getElementById("prevButton").disabled = false;
     else
@@ -63,33 +82,60 @@ function updateResult(next) {
 
 function onSearch() {
 
-    document.getElementById("cancel").disabled = false;
-    var term = document.getElementById("searchText").value;
-    document.getElementById("searchText").disabled = true;
+    if (!searchClicked) {
 
-    $('.search-body').addClass('expand');
-    $("#roller").fadeIn(50);
-    document.getElementById("searchBtn").disabled = true;
+        searchClicked = true;
+        $("#searchBtn").html("Cancel");
+        $("#searchBtn").removeClass("btn-primary");
+        $("#searchBtn").addClass("btn-danger");
 
-    appHub.invoke("Search", term).catch(function (err) {
-        return console.error(err.toString());
-    });
+        var term = document.getElementById("searchText").value;
+        document.getElementById("searchText").disabled = true;
+
+        $('.search-body').addClass('expand');
+        $("#roller").fadeIn(50);
+
+        var type = false;
+        if ($("#playlistToggle").is(":checked"))
+            type = true;
+
+        appHub.invoke("Search", term, type).catch(function (err) {
+            return console.error(err.toString());
+        });
+    }
+    else {
+        cancelSearch();
+    }
 }
 
 function onAddToQueue() {
 
     var result = searchResults[resultIndex];
-    var videoData = [result.videoId.toString(), result.name.toString(), result.channel.toString(), result.publishedDate.toString(), result.duration.toString(), result.thumbnail.toString()];
+    var resultData = [];
+    if (isPlaylist) {
+        resultData = [result.playlistId.toString(), result.name.toString(), result.channel.toString(), result.publishedDate.toString(), result.description.toString(), result.thumbnail.toString()];
+        $("#loadingText").html("Loading Playlist...");
+        $(".overlay").fadeIn(200);
+    }
+    else
+        resultData = [result.videoId.toString(), result.name.toString(), result.channel.toString(), result.publishedDate.toString(), result.duration.toString(), result.thumbnail.toString()];
 
     if (Cookies.get('sessionId') != "") {
-        appHub.invoke("AddToQueue", Cookies.get('sessionId'), Cookies.get('userId'), videoData).catch(function (err) {
+        appHub.invoke("AddToQueue", Cookies.get('sessionId'), Cookies.get('userId'), resultData, isPlaylist).catch(function (err) {
+            return console.error(err.toString());
+        });
+    }
+    else if (isPlaylist) {
+        appHub.invoke("QueuePlaylist", null, clientQueue.length, null, resultData).catch(function (err) {
             return console.error(err.toString());
         });
     }
     else {
-        var queueItem = [clientQueue.length, videoData, 0];
+        var queueItem = [clientQueue.length, resultData, 1];
         clientQueue.push(queueItem);
         cancelSearch();
+        growQueueContainer(1);
         addToQueue(queueItem);
+        updateOrder();
     }
 }

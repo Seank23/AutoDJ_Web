@@ -2,7 +2,6 @@
 using AutoDJ_Web.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,13 +13,13 @@ namespace AutoDJ_Web.Hubs
     {
         protected DBHandler dbHandler;
         private readonly IDistributedCache _cache;
-        private VideoSearch search;
+        private YouTubeSearch search;
 
         public AppHub(IDistributedCache cache, ApplicationDbContext context)
         {
             _cache = cache;
             dbHandler = new DBHandler(context);
-            search = new VideoSearch();
+            search = new YouTubeSearch();
         }
 
         public async Task CreateSession(string userId)
@@ -122,23 +121,44 @@ namespace AutoDJ_Web.Hubs
             await Clients.Caller.SendAsync("PingReturned", id[0], id[1]);
         }
 
-        public async Task Search(string searchTerm)
+        public async Task Search(string searchTerm, bool isPlaylist)
         {
             try
             {
                 searchTerm = searchTerm.ToLower();
-                List<VideoModel> videos = new List<VideoModel>();
+                string type = "_video";
 
-                if (_cache.GetString(searchTerm) == null)
+                if (isPlaylist)
+                    type = "_playlist";
+
+                if (_cache.GetString(searchTerm + type) == null)
                 {
-                    videos = await search.Search(searchTerm, _cache);
+                    if (isPlaylist)
+                    {
+                        List<PlaylistModel> results = await search.SearchPlaylist(searchTerm, _cache);
+                        await Clients.Caller.SendAsync("Search", results, isPlaylist);
+                    }
+                    else
+                    {
+                        List<VideoModel> results = await search.SearchVideo(searchTerm, _cache);
+                        await Clients.Caller.SendAsync("Search", results, isPlaylist);
+                    }    
                 }
                 else
                 {
-                    List<string[]> result = search.ParseVideoDetailsString(_cache.GetString(searchTerm));
-                    videos = search.PopulateVideoModel(result);
-                }
-                await Clients.Caller.SendAsync("Search", videos);
+                    List<string[]> result = search.ParseVideoDetailsString(_cache.GetString(searchTerm + type));
+
+                    if (isPlaylist)
+                    {
+                        List<PlaylistModel> results = search.PopulatePlaylistModel(result);
+                        await Clients.Caller.SendAsync("Search", results, isPlaylist);
+                    }
+                    else
+                    {
+                        List<VideoModel> results = search.PopulateVideoModel(result);
+                        await Clients.Caller.SendAsync("Search", results, isPlaylist);
+                    }
+                }  
             }
             catch (Exception e)
             {
@@ -147,17 +167,43 @@ namespace AutoDJ_Web.Hubs
             }
         }
 
-        public async Task AddToQueue(string sessionId, string userId, string[] videoData)
+        public async Task AddToQueue(string sessionId, string userId, string[] data, bool isPlaylist)
         {
             if (SessionHandler.GetUsersSession(userId) == sessionId)
             {
                 QueueModel myQueue = SessionHandler.GetQueue(sessionId);
-                VideoModel video = new VideoModel(videoData[0], videoData[1], videoData[2], videoData[3], videoData[4], videoData[5]);
+                if (isPlaylist)
+                {
+                    await QueuePlaylist(myQueue, myQueue.Queue.Count, sessionId, data);
+                }
+                else
+                {
+                    VideoModel video = new VideoModel(data[0], data[1], data[2], data[3], data[4], data[5]);
+                    QueueItemModel item = new QueueItemModel(myQueue.NextId(), video, 1);
+                    myQueue.Queue.Add(item);
+                    await Clients.Group(sessionId).SendAsync("AddToQueue", item);
+                }
+                await Clients.Caller.SendAsync("Cancel");
+                
+            }
+        }
+
+        public async Task QueuePlaylist(QueueModel myQueue, int queueCount, string sessionId, string[] data)
+        {
+            if (myQueue == null)
+                myQueue = new QueueModel(queueCount);
+
+            List<VideoModel> playlistVideos = await search.GetPlaylistVideos(data[0]);
+
+            foreach (VideoModel video in playlistVideos)
+            {
                 QueueItemModel item = new QueueItemModel(myQueue.NextId(), video, 0);
                 myQueue.Queue.Add(item);
-                await Clients.Caller.SendAsync("Cancel");
-                await Clients.Group(sessionId).SendAsync("AddToQueue", item);
             }
+            if(sessionId != null)
+                await Clients.Group(sessionId).SendAsync("QueuePlaylist", myQueue.Queue.Where(item => item.Id >= queueCount).ToArray());
+            else
+                await Clients.Caller.SendAsync("QueuePlaylist", myQueue.Queue.Where(item => item.Id >= queueCount).ToArray());
         }
 
         public async Task Order(string sessionId)

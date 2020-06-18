@@ -10,6 +10,11 @@ namespace AutoDJ_Web.Models
         private int id = -1;
         public List<QueueItemModel> Queue { get; set; } = new List<QueueItemModel>();
 
+        public QueueModel(int initId = 0)
+        {
+            id = initId - 1;
+        }
+
         public int NextId()
         {
             id++;

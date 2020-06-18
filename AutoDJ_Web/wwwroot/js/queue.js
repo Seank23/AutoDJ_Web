@@ -4,13 +4,18 @@ var curTop = topPos;
 
 var clientQueue = [];
 
-appHub.on("AddToQueue", (queueItem) => { addToQueue(queueItem); });
-
 appHub.on("SetRating", (rating, id) => { setRating(rating, id) });
 
 appHub.on("UpdateOrder", (orderList) => { updateOrderClient(orderList); });
 
 appHub.on("RemoveItem", (id) => { removeItem(id); });
+
+appHub.on("AddToQueue", (queueItem) => {
+
+    growQueueContainer(1);
+    addToQueue(queueItem);
+    updateOrder();
+});
 
 appHub.on("SetQueueDuration", (duration) => {
 
@@ -24,9 +29,30 @@ appHub.on("SetQueueDuration", (duration) => {
 
 appHub.on("SyncQueue", (queue) => {
 
+    growQueueContainer(queue.length);
     for (i = 0; i < queue.length; i++) {
         addToQueue(queue[i]);
     }
+});
+
+appHub.on("QueuePlaylist", (playlist) => {
+
+    if (Cookies.get('sessionId') == "") {
+        cancelSearch();
+        for (i = 0; i < playlist.length; i++) {
+            var vid = playlist[i]['video'];
+            var video = [vid.videoId.toString(), vid.name.toString(), vid.channel.toString(), vid.publishedDate.toString(), vid.duration.toString(), vid.thumbnail.toString()];
+            clientQueue.push([playlist[i]['id'], video, playlist[i]['rating']]);
+        }
+    }
+
+    growQueueContainer(playlist.length);
+    var i = 0;
+    while (i < playlist.length) {
+        addToQueue(playlist[i]);
+        i++;
+    }
+    $(".overlay").fadeOut(200);
 });
 
 appHub.on("QueueMigrated", () => {
@@ -45,7 +71,7 @@ function addToQueue(queueItem) {
 
     var url = "";
     var itemId = "";
-    if (Cookies.get('sessionId') == "") {
+    if (Cookies.get('sessionId') == "" && !isPlaylist) {
         url = `/QueueItemTemplate?id=${queueItem[0]}&rating=${queueItem[2]}&videoId=${queueItem[1][0]}&videoName=${queueItem[1][1]}&videoChannel=${queueItem[1][2]}&videoDate=${queueItem[1][3]}&videoDuration=${queueItem[1][4]}&videoThumbnail=${queueItem[1][5]}`;
         itemId = "item" + queueItem[0];
     }
@@ -66,10 +92,20 @@ function addToQueue(queueItem) {
     $(queueContainer).show();
     setQueueDuration();
 
-    $(itemContainer).fadeIn(500);
-    $(queueContainer).animate({ "height": curHeight + 70 }, 200);
     curHeight += 70;
     curTop += 70;
+
+    $(itemContainer).fadeIn(500);
+}
+
+function growQueueContainer(numItems) {
+
+    $(queueContainer).animate({ "height": curHeight + (70 * numItems) }, 200);
+}
+
+function shrinkQueueContainer(numItems) {
+
+    $(queueContainer).animate({ "height": curHeight - (70 * numItems) }, 200);
 }
 
 function setRating(rating, id) {
@@ -97,7 +133,11 @@ function updateOrderClient(orderList) {
 function removeItem(id) {
 
     $("#item" + id).fadeOut(500, function () {
-        animateQueueMove();
+
+        shrinkQueueContainer(1);
+        curHeight -= 70;
+        curTop -= 70;
+
         $(this).remove();
         setQueueDuration();
         if (!checkQueueEmpty(false))
@@ -194,7 +234,11 @@ function popFromQueue() {
             }
         }
         $(queue[minIndex]).fadeOut(500, function () {
-            animateQueueMove();
+
+            shrinkQueueContainer(1);
+            curHeight -= 70;
+            curTop -= 70;
+
             $(this).remove();
             updateOrder();
             checkQueueEmpty(false);
@@ -220,13 +264,6 @@ function checkQueueEmpty(onStop) {
         return false;
 }
 
-function animateQueueMove() {
-
-    $(queueContainer).animate({ "height": curHeight - 70 }, 200);
-    curHeight -= 70;
-    curTop -= 70;
-}
-
 function getDurationList() {
 
     var durations = []
@@ -239,9 +276,11 @@ function clearQueue() {
 
     clientQueue = [];
     var queue = $("#queueContainer").children();
+    shrinkQueueContainer(queue.length);
     for (i = 0; i < queue.length; i++) {
         queue[i].remove();
-        animateQueueMove();
+        curHeight -= 70;
+        curTop -= 70;
     }
     document.getElementById("queueTime").textContent = "";
     document.getElementById("songCount").textContent = "";
