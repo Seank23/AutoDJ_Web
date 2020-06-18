@@ -40,6 +40,7 @@ function cancelSearch() {
     document.getElementById("searchBtn").disabled = false;
     document.getElementById("searchText").disabled = false;
     document.getElementById("searchText").value = "";
+    $(".myToggle").addClass("off");
 }
 
 function updateResult(next) {
@@ -124,10 +125,17 @@ function onAddToQueue() {
             return console.error(err.toString());
         });
     }
+    else if (isPlaylist) {
+        appHub.invoke("QueuePlaylist", null, clientQueue.length, null, resultData).catch(function (err) {
+            return console.error(err.toString());
+        });
+    }
     else {
-        var queueItem = [clientQueue.length, resultData, 0];
+        var queueItem = [clientQueue.length, resultData, 1];
         clientQueue.push(queueItem);
         cancelSearch();
+        growQueueContainer(1);
         addToQueue(queueItem);
+        updateOrder();
     }
 }

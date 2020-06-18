@@ -2,7 +2,6 @@
 using AutoDJ_Web.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -175,26 +174,36 @@ namespace AutoDJ_Web.Hubs
                 QueueModel myQueue = SessionHandler.GetQueue(sessionId);
                 if (isPlaylist)
                 {
-                    int queueSize = myQueue.Queue.Count;
-                    List<VideoModel> playlistVideos = await search.GetPlaylistVideos(data[0]);
-
-                    foreach(VideoModel video in playlistVideos)
-                    {
-                        QueueItemModel item = new QueueItemModel(myQueue.NextId(), video, 0);
-                        myQueue.Queue.Add(item);
-                    }
-                    await Clients.Caller.SendAsync("QueuePlaylist", myQueue.Queue.Where(item => item.Id >= queueSize).ToArray());
+                    await QueuePlaylist(myQueue, myQueue.Queue.Count, sessionId, data);
                 }
                 else
                 {
                     VideoModel video = new VideoModel(data[0], data[1], data[2], data[3], data[4], data[5]);
-                    QueueItemModel item = new QueueItemModel(myQueue.NextId(), video, 0);
+                    QueueItemModel item = new QueueItemModel(myQueue.NextId(), video, 1);
                     myQueue.Queue.Add(item);
                     await Clients.Group(sessionId).SendAsync("AddToQueue", item);
                 }
                 await Clients.Caller.SendAsync("Cancel");
                 
             }
+        }
+
+        public async Task QueuePlaylist(QueueModel myQueue, int queueCount, string sessionId, string[] data)
+        {
+            if (myQueue == null)
+                myQueue = new QueueModel(queueCount);
+
+            List<VideoModel> playlistVideos = await search.GetPlaylistVideos(data[0]);
+
+            foreach (VideoModel video in playlistVideos)
+            {
+                QueueItemModel item = new QueueItemModel(myQueue.NextId(), video, 0);
+                myQueue.Queue.Add(item);
+            }
+            if(sessionId != null)
+                await Clients.Group(sessionId).SendAsync("QueuePlaylist", myQueue.Queue.Where(item => item.Id >= queueCount).ToArray());
+            else
+                await Clients.Caller.SendAsync("QueuePlaylist", myQueue.Queue.Where(item => item.Id >= queueCount).ToArray());
         }
 
         public async Task Order(string sessionId)

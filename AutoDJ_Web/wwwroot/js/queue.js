@@ -4,16 +4,18 @@ var curTop = topPos;
 
 var clientQueue = [];
 
-appHub.on("AddToQueue", (queueItem) => {
-    growQueueContainer(1);
-    addToQueue(queueItem);
-});
-
 appHub.on("SetRating", (rating, id) => { setRating(rating, id) });
 
 appHub.on("UpdateOrder", (orderList) => { updateOrderClient(orderList); });
 
 appHub.on("RemoveItem", (id) => { removeItem(id); });
+
+appHub.on("AddToQueue", (queueItem) => {
+
+    growQueueContainer(1);
+    addToQueue(queueItem);
+    updateOrder();
+});
 
 appHub.on("SetQueueDuration", (duration) => {
 
@@ -35,9 +37,20 @@ appHub.on("SyncQueue", (queue) => {
 
 appHub.on("QueuePlaylist", (playlist) => {
 
+    if (Cookies.get('sessionId') == "") {
+        cancelSearch();
+        for (i = 0; i < playlist.length; i++) {
+            var vid = playlist[i]['video'];
+            var video = [vid.videoId.toString(), vid.name.toString(), vid.channel.toString(), vid.publishedDate.toString(), vid.duration.toString(), vid.thumbnail.toString()];
+            clientQueue.push([playlist[i]['id'], video, playlist[i]['rating']]);
+        }
+    }
+
     growQueueContainer(playlist.length);
-    for (i = 0; i < playlist.length; i++) {
+    var i = 0;
+    while (i < playlist.length) {
         addToQueue(playlist[i]);
+        i++;
     }
     $(".overlay").fadeOut(200);
 });
@@ -58,7 +71,7 @@ function addToQueue(queueItem) {
 
     var url = "";
     var itemId = "";
-    if (Cookies.get('sessionId') == "") {
+    if (Cookies.get('sessionId') == "" && !isPlaylist) {
         url = `/QueueItemTemplate?id=${queueItem[0]}&rating=${queueItem[2]}&videoId=${queueItem[1][0]}&videoName=${queueItem[1][1]}&videoChannel=${queueItem[1][2]}&videoDate=${queueItem[1][3]}&videoDuration=${queueItem[1][4]}&videoThumbnail=${queueItem[1][5]}`;
         itemId = "item" + queueItem[0];
     }
