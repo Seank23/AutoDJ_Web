@@ -31,6 +31,7 @@ function play(result) {
         playPlayer();
     }
     else {
+        playerState = "playing";
         setupControlsOnPlay();
         startPlayer(result);
     }

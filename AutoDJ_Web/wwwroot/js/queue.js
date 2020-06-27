@@ -10,6 +10,8 @@ appHub.on("UpdateOrder", (orderList) => { updateOrderClient(orderList); });
 
 appHub.on("RemoveItem", (id) => { removeItem(id); });
 
+appHub.on("ClearQueue", () => { clearQueue(); });
+
 appHub.on("AddToQueue", (queueItem) => {
 
     growQueueContainer(1);
@@ -65,6 +67,7 @@ function addToQueue(queueItem) {
 
     console.log(queueItem);
     $("#queueEmpty").hide();
+    document.getElementById('clearQBtn').disabled = false;
     document.getElementById("playButton").disabled = false;
     if (player != null)
         document.getElementById("skipButton").disabled = false;
@@ -259,6 +262,7 @@ function checkQueueEmpty(onStop) {
     if ($("#queueContainer").children().length == 0) {
         $("#queueEmpty").show();
         document.getElementById("skipButton").disabled = true;
+        document.getElementById('clearQBtn').disabled = true;
 
         if (document.getElementById('player').tagName == "DIV" || onStop == true) {
             document.getElementById('playButton').disabled = true;
@@ -291,5 +295,18 @@ function clearQueue() {
     }
     document.getElementById("queueTime").textContent = "";
     document.getElementById("songCount").textContent = "";
+    checkQueueEmpty();
+}
+
+function clearQueueClicked() {
+
+    if (Cookies.get('sessionId') != "") {
+        appHub.invoke("ClearQueue", Cookies.get('sessionId'), Cookies.get("userId")).catch(function (err) {
+            return console.error(err.toString());
+        });
+    }
+    else {
+        clearQueue();
+    }
 }
 

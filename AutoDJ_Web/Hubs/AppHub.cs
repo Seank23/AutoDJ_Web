@@ -68,7 +68,7 @@ namespace AutoDJ_Web.Hubs
                     await Clients.Caller.SendAsync("SyncQueue", myQueue.Queue);
 
                 if (myPlayer.VideoId != null)
-                    await Clients.Caller.SendAsync("SyncPlayer", myPlayer.GetVideoDetails(), myPlayer.GetCurrentTime());
+                    await Clients.Caller.SendAsync("SyncPlayer", myPlayer.GetVideoDetails(), myPlayer.GetCurrentTime(), myPlayer.IsPaused);
 
                 await Clients.Caller.SendAsync("SessionSynced");
             }
@@ -204,6 +204,16 @@ namespace AutoDJ_Web.Hubs
                 await Clients.Group(sessionId).SendAsync("QueuePlaylist", myQueue.Queue.Where(item => item.Id >= queueCount).ToArray());
             else
                 await Clients.Caller.SendAsync("QueuePlaylist", myQueue.Queue.Where(item => item.Id >= queueCount).ToArray());
+        }
+
+        public async Task ClearQueue(string sessionId, string userId)
+        {
+            if (SessionHandler.GetUsersSession(userId) == sessionId)
+            {
+                QueueModel myQueue = SessionHandler.GetQueue(sessionId);
+                myQueue.Queue.Clear();
+                await Clients.Group(sessionId).SendAsync("ClearQueue");
+            }
         }
 
         public async Task Order(string sessionId)

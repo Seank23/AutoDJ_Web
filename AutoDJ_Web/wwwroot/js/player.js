@@ -28,9 +28,16 @@ function nextSong(result) {
     }
 }
 
-appHub.on("SyncPlayer", (video, time) => {
+appHub.on("SyncPlayer", (video, time, paused) => {
 
     setupControlsOnPlay();
+    if (paused) {
+        playerState = "paused";
+        $(".button.play").removeClass("pause");
+    }
+    else
+        playerState = "playing";
+
     document.getElementById("videoTitle").textContent = video[0];
     initPlayer(video[1], time);
     checkQueueEmpty();
@@ -55,7 +62,8 @@ function playNextSong() {
 function onPlayerReady(event) {
 
     player.setVolume(initVolume);
-    event.target.playVideo();
+    if (playerState == "playing")
+        event.target.playVideo();
     timebarTimer = setInterval(checkPlayerTime, 500);
 }
 
@@ -94,15 +102,13 @@ function startPlayer(video) {
     popFromQueue();
     document.getElementById("videoTitle").textContent = video[0];
     initPlayer(video[1])
-
 }
 
 function initPlayer(video, time) {
 
-    playerState = "paused";
     player = new YT.Player('player', {
         videoId: video,
-        playerVars: { "start": time, "autoplay": 1, "disablekb": 1, "fs": 0, "rel": 0, "modestbranding": 1, "enablejsapi": 1 },
+        playerVars: { "start": time, "autoplay": 0, "controls": 0, "disablekb": 1, "fs": 0, "rel": 0, "modestbranding": 1, "enablejsapi": 1 },
         events: { "onReady": onPlayerReady, "onStateChange": onPlayerStateChange }
     });
     $("#playerCard").fadeIn(500);
