@@ -122,6 +122,12 @@ body {
     z-index: 9999;
 }
 
+.hidden {
+    height: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
 #loadingRoller div:after {
     background: white;
 }
@@ -137,6 +143,26 @@ body {
 
 .toggle-handle {
     background-color: rgb(27, 110, 194) !important;
+}
+
+#queueInfo {
+    display: inline-block;
+    width: 70%;
+    vertical-align: text-bottom;
+}
+
+#clearQBtnContainer {
+    text-align: right;
+    display: inline-block;
+    width: 30%;
+    vertical-align: top;
+}
+
+.btn-wrap-text {
+    overflow: hidden;
+    white-space: nowrap;
+    display: inline-block;
+    text-overflow: ellipsis;
 }
 
 @media only screen and (max-width: 1200px) {

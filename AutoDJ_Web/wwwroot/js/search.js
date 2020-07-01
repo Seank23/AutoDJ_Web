@@ -132,7 +132,7 @@ function onAddToQueue() {
         });
     }
     else {
-        var queueItem = [clientQueue.length, resultData, 1];
+        var queueItem = [queueCountTotal + 1, resultData, 1];
         clientQueue.push(queueItem);
         cancelSearch();
         growQueueContainer(1);

@@ -132,11 +132,13 @@
     <div class="col p-0 section">
         <div class="card shadow" style="min-width: 375px">
             <div class="card-header">
-                <div>
-                    <row class="row">
-                        <h5 class="col-9">Song Queue<br /><small><span id="songCount"></span><span id="queueTime"></span></small></h5>
-                        <button id="clearQBtn" class="btn btn-outline-danger has-text" onclick="clearQueueClicked()" style="max-height: 38px;" disabled>Clear Queue</button>
-                    </row>
+                <div style="font-size: 0;">
+                    <div id="queueInfo">
+                        <h5>Song Queue<br /><small><span id="songCount"></span><span id="queueTime"></span></small></h5>
+                    </div>
+                    <span id="clearQBtnContainer">
+                        <button id="clearQBtn" class="btn btn-outline-danger btn-wrap-text has-text" onclick="clearQueueClicked()" style="max-height: 38px;" disabled>Clear Queue</button>
+                    </span>
                 </div>
             </div>
             <div id="queueCardBody" class="card-body">
@@ -145,6 +147,10 @@
                 </div>
 
                 <div id="queueContainer">
+                </div>
+
+                <div id="queueShowHide" class="mt-4" style="display: none;">
+                    <button id="queueShowHideButton" type="button" class="btn btn-outline-secondary btn-block" onclick="queueShowHideClicked()">Show All</button>
                 </div>
             </div>
         </div>

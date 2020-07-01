@@ -1,8 +1,10 @@
-﻿const topPos = $("#queueCardBody").outerHeight() + 20;
+﻿const initialDisplayCount = 10;
+const topPos = $("#queueCardBody").outerHeight() + 20;
 var curHeight = -20;
 var curTop = topPos;
 
 var clientQueue = [];
+var queueCountTotal = 0;
 
 appHub.on("SetRating", (rating, id) => { setRating(rating, id) });
 
@@ -35,25 +37,26 @@ appHub.on("SyncQueue", (queue) => {
     for (var i = 0; i < queue.length; i++) {
         addToQueue(queue[i]);
     }
+    checkItemsVisible();
 });
 
 appHub.on("QueuePlaylist", (playlist) => {
 
     if (Cookies.get('sessionId') == "") {
-        cancelSearch();
         for (i = 0; i < playlist.length; i++) {
             var vid = playlist[i]['video'];
             var video = [vid.videoId.toString(), vid.name.toString(), vid.channel.toString(), vid.publishedDate.toString(), vid.duration.toString(), vid.thumbnail.toString()];
             clientQueue.push([playlist[i]['id'], video, playlist[i]['rating']]);
         }
     }
-
     growQueueContainer(playlist.length);
     var i = 0;
     while (i < playlist.length) {
         addToQueue(playlist[i]);
         i++;
     }
+    cancelSearch();
+    checkItemsVisible();
     $(".overlay").fadeOut(200);
 });
 
@@ -71,6 +74,8 @@ function addToQueue(queueItem) {
     document.getElementById("playButton").disabled = false;
     if (player != null)
         document.getElementById("skipButton").disabled = false;
+
+    queueCountTotal++;
 
     var url = "";
     var itemId = "";
@@ -102,10 +107,14 @@ function addToQueue(queueItem) {
     $(queueContainer).show();
     setQueueDuration();
 
+    if (curTop - topPos > queueContainer.style.maxHeight.substring(0, queueContainer.style.maxHeight.length)) {
+        $(itemContainer).addClass("hidden");
+    }
+    else
+        $(itemContainer).fadeIn(500);
+
     curHeight += 70;
     curTop += 70;
-
-    $(itemContainer).fadeIn(500);
 }
 
 function growQueueContainer(numItems) {
@@ -136,8 +145,11 @@ function updateOrderClient(orderList) {
         var myItem = items[i];
         var id = myItem.id.substring(4, items[i].id.length);
 
-        $(myItem).animate({ "top": topPos + orderDict[id] * 70 }, 200);
+        $(myItem).animate({ "top": topPos + orderDict[id] * 70 }, 200, function () {
+            checkItemsVisible();
+        });
     }
+    
 }
 
 function removeItem(id) {
@@ -152,6 +164,8 @@ function removeItem(id) {
         setQueueDuration();
         if (!checkQueueEmpty(false))
             updateOrder();
+
+        checkItemsVisible();
     });
 }
 
@@ -261,6 +275,7 @@ function checkQueueEmpty(onStop) {
 
     if ($("#queueContainer").children().length == 0) {
         $("#queueEmpty").show();
+        $("#queueShowHide").hide();
         document.getElementById("skipButton").disabled = true;
         document.getElementById('clearQBtn').disabled = true;
 
@@ -286,6 +301,7 @@ function getDurationList() {
 function clearQueue() {
 
     clientQueue = [];
+    queueCountTotal = 0;
     var queue = $("#queueContainer").children();
     shrinkQueueContainer(queue.length);
     for (i = 0; i < queue.length; i++) {
@@ -307,6 +323,52 @@ function clearQueueClicked() {
     }
     else {
         clearQueue();
+    }
+}
+
+function queueShowHideClicked() {
+
+    $("#queueContainer").toggleClass("expand");
+    checkItemsVisible();
+}
+
+function checkItemsVisible() {
+
+    var queue = $("#queueContainer").children();
+    var queueHeight = $("#queueContainer").css("max-height");
+
+    if (queueHeight != "none")
+        queueHeight = queueHeight.substring(0, queueHeight.length - 2);
+    else
+        queueHeight = 1000000;
+
+    for (i = 0; i < queue.length; i++) {
+        var itemTop = queue[i].style.top.substring(0, queue[i].style.top.length - 2)
+        if (parseInt(itemTop) - topPos > parseInt(queueHeight) - 48) {
+            $(queue[i]).addClass("hidden");
+        }
+        else {
+            if ($(queue[i]).hasClass("hidden"))
+                $(queue[i]).removeClass("hidden");
+            $(queue[i]).fadeIn(500);
+        }
+    }
+    displayQueueShowHide();
+}
+
+function displayQueueShowHide() {
+
+    if ($("#queueContainer").children().length <= initialDisplayCount) {
+        $("#queueContainer").removeClass("expand");
+        $("#queueShowHide").fadeOut(500);
+    }
+    else if ($(".hidden").length == 0 && $("#queueContainer").hasClass("expand")) {
+        $("#queueShowHideButton").html("Show Less");
+        $("#queueShowHide").fadeIn(500);
+    }
+    else {    
+        $("#queueShowHideButton").html("Show All");
+        $("#queueShowHide").fadeIn(500);
     }
 }
 

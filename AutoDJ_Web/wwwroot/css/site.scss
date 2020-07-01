@@ -1,0 +1,9 @@
+﻿$initQueueCount: 10;
+
+#queueContainer {
+    max-height: $initQueueCount * 70px - 22px;
+
+    &.expand {
+        max-height: none;
+    }
+}
