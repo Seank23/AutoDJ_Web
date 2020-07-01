@@ -110,8 +110,8 @@ namespace AutoDJ_Web
                 for (int i = 0; i < videoListResponse.Items.Count; i++)
                 {
                     var videoResult = videoListResponse.Items[i];
-                    string[] resultArray = { videoResult.Id, videoResult.Snippet.Title, videoResult.Snippet.ChannelTitle, videoResult.Snippet.PublishedAt.Value.ToShortDateString(),
-                                         videoResult.ContentDetails.Duration, videoResult.Snippet.Thumbnails.Default__.Url };
+                    string[] resultArray = { videoResult.Id, videoResult.Snippet.Title, videoResult.Snippet.ChannelTitle, videoResult.ContentDetails.Duration, 
+                                             videoResult.Snippet.PublishedAt.Value.ToShortDateString(), videoResult.Snippet.Thumbnails.Default__.Url };
                     videoDetails.Add(resultArray);
                 }
             }

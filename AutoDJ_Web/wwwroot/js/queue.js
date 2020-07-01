@@ -1,10 +1,12 @@
 ﻿const initialDisplayCount = 10;
+const itemHeight = 70;
 const topPos = $("#queueCardBody").outerHeight() + 20;
 var curHeight = -20;
 var curTop = topPos;
 
 var clientQueue = [];
 var queueCountTotal = 0;
+var itemChangedIndex = 0;
 
 appHub.on("SetRating", (rating, id) => { setRating(rating, id) });
 
@@ -113,18 +115,18 @@ function addToQueue(queueItem) {
     else
         $(itemContainer).fadeIn(500);
 
-    curHeight += 70;
-    curTop += 70;
+    curHeight += itemHeight;
+    curTop += itemHeight;
 }
 
 function growQueueContainer(numItems) {
 
-    $(queueContainer).animate({ "height": curHeight + (70 * numItems) }, 200);
+    $(queueContainer).animate({ "height": curHeight + (itemHeight * numItems) }, 200);
 }
 
 function shrinkQueueContainer(numItems) {
 
-    $(queueContainer).animate({ "height": curHeight - (70 * numItems) }, 200);
+    $(queueContainer).animate({ "height": curHeight - (itemHeight * numItems) }, 200);
 }
 
 function setRating(rating, id) {
@@ -135,30 +137,29 @@ function setRating(rating, id) {
 
 function updateOrderClient(orderList) {
 
-    var items = $("#queueContainer").children();
     var orderDict = {};
 
     for (i = 0; i < orderList.length; i++)
         orderDict[orderList[i]] = i;
 
-    for (i = 0; i < items.length; i++) {
-        var myItem = items[i];
-        var id = myItem.id.substring(4, items[i].id.length);
+    for (i = 0; i < itemChangedIndex + 1; i++) {
 
-        $(myItem).animate({ "top": topPos + orderDict[id] * 70 }, 200, function () {
+        var myItem = $("#queueContainer").find("#item" + orderList[i]);
+        $(myItem).animate({ "top": topPos + orderDict[orderList[i]] * itemHeight }, 200, function () {
             checkItemsVisible();
         });
     }
-    
 }
 
 function removeItem(id) {
 
+    itemChangedIndex = $("#queueContainer").children().length;
+
     $("#item" + id).fadeOut(500, function () {
 
         shrinkQueueContainer(1);
-        curHeight -= 70;
-        curTop -= 70;
+        curHeight -= itemHeight;
+        curTop -= itemHeight;
 
         $(this).remove();
         setQueueDuration();
@@ -211,6 +212,8 @@ function setQueueDuration() {
 
 function addVote(id) {
 
+    itemChangedIndex = getItemIndex(id);
+
     if (Cookies.get('sessionId') != "") {
         appHub.invoke("AddVote", Cookies.get('sessionId'), id).catch(function (err) {
             return console.error(err.toString());
@@ -260,8 +263,13 @@ function popFromQueue() {
         $(queue[minIndex]).fadeOut(500, function () {
 
             shrinkQueueContainer(1);
-            curHeight -= 70;
-            curTop -= 70;
+            curHeight -= itemHeight;
+            curTop -= itemHeight;
+
+            if ($("queueContainer").hasClass("expand"))
+                itemChangedIndex = $("queueContainer").children().length;
+            else
+                itemChangedIndex = initialDisplayCount;
 
             $(this).remove();
             updateOrder();
@@ -306,8 +314,8 @@ function clearQueue() {
     shrinkQueueContainer(queue.length);
     for (i = 0; i < queue.length; i++) {
         queue[i].remove();
-        curHeight -= 70;
-        curTop -= 70;
+        curHeight -= itemHeight;
+        curTop -= itemHeight;
     }
     document.getElementById("queueTime").textContent = "";
     document.getElementById("songCount").textContent = "";
@@ -328,6 +336,10 @@ function clearQueueClicked() {
 
 function queueShowHideClicked() {
 
+    if (!$("#queueContainer").hasClass("expand")) {
+        itemChangedIndex = $("#queueContainer").children().length;
+        updateOrder();
+    }
     $("#queueContainer").toggleClass("expand");
     checkItemsVisible();
 }
@@ -370,5 +382,12 @@ function displayQueueShowHide() {
         $("#queueShowHideButton").html("Show All");
         $("#queueShowHide").fadeIn(500);
     }
+}
+
+function getItemIndex(id) {
+
+    var item = $("#queueContainer").find("#item" + id);
+    var top = item.css("top").substring(0, item.css("top").length - 2);
+    return (parseInt(top) - topPos) / itemHeight;
 }
 
