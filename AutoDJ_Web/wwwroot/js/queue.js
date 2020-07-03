@@ -287,7 +287,7 @@ function checkQueueEmpty(onStop) {
         document.getElementById("skipButton").disabled = true;
         document.getElementById('clearQBtn').disabled = true;
 
-        if (document.getElementById('player').tagName == "DIV" || onStop == true) {
+        if ($("#playerCard").css("display") == "none" || onStop == true) {
             document.getElementById('playButton').disabled = true;
             document.getElementById('stopButton').disabled = true;
             $(".button.play").removeClass('pause');

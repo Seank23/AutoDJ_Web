@@ -145,13 +145,13 @@ body {
     background-color: rgb(27, 110, 194) !important;
 }
 
-#queueInfo {
+.infoLeft {
     display: inline-block;
     width: 70%;
     vertical-align: text-bottom;
 }
 
-#clearQBtnContainer {
+.buttonRight {
     text-align: right;
     display: inline-block;
     width: 30%;
@@ -163,6 +163,10 @@ body {
     white-space: nowrap;
     display: inline-block;
     text-overflow: ellipsis;
+}
+
+.playerHide {
+    display: none;
 }
 
 @media only screen and (max-width: 1200px) {
@@ -196,10 +200,6 @@ body {
 }
 
 @media only screen and (min-width: 1200px) {
-    #playerCardRow {
-        width: 170%;
-    }
-
     #playerCard {
         margin-top: 0;
     }

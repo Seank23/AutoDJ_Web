@@ -353,6 +353,15 @@ namespace AutoDJ_Web.Hubs
                 await Clients.Group(sessionId).SendAsync("Stop", "empty");
             }
         }
+
+        public async Task GetPlayer(string sessionId)
+        {
+            if (SessionHandler.IsValidSession(sessionId))
+            {
+                PlayerModel myPlayer = SessionHandler.GetPlayer(sessionId);
+                await Clients.Caller.SendAsync("PlayerReturned", myPlayer.GetVideoDetails(), myPlayer.GetCurrentTime(), myPlayer.IsPaused);
+            }
+        }
     }
 }
 

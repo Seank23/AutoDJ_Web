@@ -10,12 +10,26 @@ var playerState = "";
 
 appHub.on("NextSong", (result) => { nextSong(result); });
 
+appHub.on("PlayerReturned", (video, time, paused) => {
+
+    if (paused) {
+        playerState = "paused";
+        $(".button.play").removeClass("pause");
+    }
+    else
+        playerState = "playing";
+    initPlayer(video[1], time);
+});
+
 function nextSong(result) {
 
     if (result != "empty") {
         popFromQueue();
         document.getElementById("videoTitle").textContent = result[0];
-        player.loadVideoById(result[1])
+
+        if (!$("#playerBody").hasClass("playerHide"))
+            player.loadVideoById(result[1]);
+
         checkQueueEmpty(false);
         setQueueDuration();
         $("#timelineBar").css("width", 0);
@@ -24,7 +38,7 @@ function nextSong(result) {
     }
     else {
         checkQueueEmpty(true);
-        disposePlayer();
+        disposePlayerCard();
     }
 }
 
@@ -40,6 +54,7 @@ appHub.on("SyncPlayer", (video, time, paused) => {
 
     document.getElementById("videoTitle").textContent = video[0];
     initPlayer(video[1], time);
+    $("#playerCard").fadeIn(500);
     checkQueueEmpty();
     document.getElementById('playButton').disabled = false;
 });
@@ -102,6 +117,7 @@ function startPlayer(video) {
     popFromQueue();
     document.getElementById("videoTitle").textContent = video[0];
     initPlayer(video[1])
+    $("#playerCard").fadeIn(500);
 }
 
 function initPlayer(video, time) {
@@ -111,25 +127,31 @@ function initPlayer(video, time) {
         playerVars: { "start": time, "autoplay": 0, "controls": 0, "disablekb": 1, "fs": 0, "rel": 0, "modestbranding": 1, "enablejsapi": 1 },
         events: { "onReady": onPlayerReady, "onStateChange": onPlayerStateChange }
     });
-    $("#playerCard").fadeIn(500);
 }
 
-function disposePlayer() {
+function disposePlayerCard() {
 
-    player.pauseVideo();
-    clearInterval(timebarTimer);
     playerState = "";
     $("#playerCard").fadeOut(500, function () {
-        $("#player").remove();
-        player = null;
-        var playerDiv = document.createElement("DIV");
-        playerDiv.id = "player";
-        $("#playerContainer").append(playerDiv);
+
+        if (player != null)
+            disposePlayerObject();
+
         document.getElementById("videoTitle").textContent = "";
         $("#timelineBar").css("width", 0);
         $("#timelineTime").html("0:00");
     });
-    
+}
+
+function disposePlayerObject() {
+
+    player.pauseVideo();
+    clearInterval(timebarTimer);
+    $("#player").remove();
+    player = null;
+    var playerDiv = document.createElement("DIV");
+    playerDiv.id = "player";
+    $("#playerContainer").append(playerDiv);
 }
 
 function checkPlayerTime() {
@@ -159,4 +181,25 @@ function isPlayerStateVaild() {
             return false;
     }
     return true;
+}
+
+function playerShowHideClicked() {
+
+    if ($("#playerBody").hasClass("playerHide")) {
+        $("#playerBody").removeClass("playerHide");
+        $("#playerShowHideBtn").html("Hide");
+
+        if (Cookies.get('sessionId') != "") {
+            appHub.invoke("GetPlayer", Cookies.get('sessionId')).catch(function (err) {
+                return console.error(err.toString());
+            });
+        }
+    }
+    else {
+        $("#playerBody").addClass("playerHide");
+        $("#playerShowHideBtn").html("Show");
+
+        if (Cookies.get('sessionId') != "")
+            disposePlayerObject();
+    }
 }

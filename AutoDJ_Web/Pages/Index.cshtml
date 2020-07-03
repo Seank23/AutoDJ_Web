@@ -22,9 +22,9 @@
 </div>
 
 <div class="row justify-content-between">
-    <div class="col-xl-5 col-sm-12">
+    <div class="col-xl-8 col-sm-12">
         <div class="row">
-            <div class="col p-0 section">
+            <div class="col-6 p-0 section">
                 <div class="card shadow" style="min-width: 375px">
                     <div class="card-header">
                         <h5>Add Song<br /><small>Search YouTube for a song to add to the queue</small></h5>
@@ -84,15 +84,39 @@
                     </div>
                 </div>
             </div>
+
+            <div class="col p-0 section d-flex justify-content-center">
+                <div class="card card-body shadow p-2" style="min-width: 200px; max-width: 350px; max-height: 100px">
+                    <div class="row" style="">
+                        <div class="pt-1" style="margin: auto">
+                            <button id="playButton" class="button play" onclick="playClicked()" disabled></button>
+                            <button id="stopButton" class="button stop" onclick="stopClicked()" disabled></button>
+                            <button id="skipButton" class="button skip" onclick="skipClicked()" disabled></button>
+                        </div>
+                    </div>
+                    <div class="row ml-2">
+                        <div id="volume">
+                            <i class="fa fa-volume-down"></i>
+                            <div id="volumeSlider"></div>
+                            <i class="fa fa-volume-up"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div id="playerCardRow" class="row">
             <div id="playerCard" class="col p-0 section" style="display: none;">
                 <div class="card shadow" style="min-width: 300px">
-                    <div class="card-header">
-                        <h5><span id="playState">Now Playing...</span><br /><small><span id="videoTitle"></span></small></h5>
+                    <div class="card-header" style="font-size: 0;">
+                        <div class="infoLeft">
+                            <h5><span id="playState">Now Playing...</span><br /><small><span id="videoTitle"></span></small></h5>
+                        </div>
+                        <span class="buttonRight">
+                            <button id="playerShowHideBtn" class="btn btn-outline-primary btn-wrap-text has-text" onclick="playerShowHideClicked()" style="max-height: 38px;">Hide</button>
+                        </span>
                     </div>
-                    <div class="card-body justify-content-center pb-0">
+                    <div id="playerBody" class="card-body justify-content-center pb-0">
                         <div id="playerContainer">
                             <div id="player"></div>
                         </div>
@@ -110,33 +134,14 @@
         </div>
     </div>
 
-    <div class="col p-0 section d-flex justify-content-center">
-        <div class="card card-body shadow p-2" style="min-width: 200px; max-width: 350px; max-height: 100px">
-            <div class="row" style="">
-                <div class="pt-1" style="margin: auto">
-                    <button id="playButton" class="button play" onclick="playClicked()" disabled></button>
-                    <button id="stopButton" class="button stop" onclick="stopClicked()" disabled></button>
-                    <button id="skipButton" class="button skip" onclick="skipClicked()" disabled></button>
-                </div>
-            </div>
-            <div class="row ml-2">
-                <div id="volume">
-                    <i class="fa fa-volume-down"></i>
-                    <div id="volumeSlider"></div>
-                    <i class="fa fa-volume-up"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col p-0 section">
+    <div class="col-3 p-0 section">
         <div class="card shadow" style="min-width: 375px">
             <div class="card-header">
                 <div style="font-size: 0;">
-                    <div id="queueInfo">
+                    <div class="infoLeft">
                         <h5>Song Queue<br /><small><span id="songCount"></span><span id="queueTime"></span></small></h5>
                     </div>
-                    <span id="clearQBtnContainer">
+                    <span class="buttonRight">
                         <button id="clearQBtn" class="btn btn-outline-danger btn-wrap-text has-text" onclick="clearQueueClicked()" style="max-height: 38px;" disabled>Clear Queue</button>
                     </span>
                 </div>
