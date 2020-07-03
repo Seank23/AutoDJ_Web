@@ -58,11 +58,21 @@ namespace AutoDJ_Web.Models
             return userId;
         }
 
-        public static string CreateSession()
+        public static string CreateSession(bool[] permissions)
         {
             string sessionId = CreateSessionId();
-            Sessions.Add(new SessionModel(sessionId));
+            Sessions.Add(new SessionModel(sessionId, permissions));
             return sessionId;
+        }
+
+        public static void AddHostUser(string sessionId, string userId)
+        {
+            Sessions.Where(session => session.SessionID == sessionId).First().HostUserID = userId;
+        }
+
+        public static bool IsHostUser(string sessionId, string userId)
+        {
+            return userId == Sessions.Where(session => session.SessionID == sessionId).First().HostUserID;
         }
 
         public static string CreateAndAddUser(string sessionId)
@@ -128,6 +138,11 @@ namespace AutoDJ_Web.Models
         public static PlayerModel GetPlayer(string sessionId)
         {
             return Sessions.Where(session => session.SessionID == sessionId).First().Player;
+        }
+
+        public static SessionUserPermissions GetPermissions(string sessionId)
+        {
+            return Sessions.Where(session => session.SessionID == sessionId).First().UserPermissions;
         }
     }
 }

@@ -13,6 +13,7 @@ namespace AutoDJ_Web.Pages
     public class QueueItemTemplateModel : PageModel
     {
         public QueueItemModel MyItem { get; set; }
+        public bool CanRemove { get; set; }
 
         protected DBHandler dbHandler;
 
@@ -21,10 +22,11 @@ namespace AutoDJ_Web.Pages
             dbHandler = new DBHandler(context);
         }
         
-        public void OnGet(int id, int rating, string videoId, string videoName, string videoChannel, string videoDate, string videoDuration, string videoThumbnail)
+        public void OnGet(int id, int rating, string videoId, string videoName, string videoChannel, string videoDate, string videoDuration, string videoThumbnail, bool canRemove)
         {
             VideoModel video = new VideoModel(videoId, videoName, videoChannel, videoDate, videoDuration, videoThumbnail);
             MyItem = new QueueItemModel(id, video, rating);
+            CanRemove = canRemove;
         }
     }
 }

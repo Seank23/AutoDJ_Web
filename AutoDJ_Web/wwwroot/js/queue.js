@@ -72,9 +72,11 @@ function addToQueue(queueItem) {
 
     console.log(queueItem);
     $("#queueEmpty").hide();
-    document.getElementById('clearQBtn').disabled = false;
     document.getElementById("playButton").disabled = false;
-    if (player != null)
+
+    if (permissions['CanClearQueue'] || isHost)
+        document.getElementById('clearQBtn').disabled = false;
+    if ((player != null && permissions['CanStop']) || (player != null && isHost))
         document.getElementById("skipButton").disabled = false;
 
     queueCountTotal++;
@@ -85,7 +87,7 @@ function addToQueue(queueItem) {
         for (i = 0; i < queueItem[1].length; i++) {
             queueItem[1][i] = queueItem[1][i].replace("&", "%26");
         }
-        url = `/QueueItemTemplate?id=${queueItem[0]}&rating=${queueItem[2]}&videoId=${queueItem[1][0]}&videoName=${queueItem[1][1]}&videoChannel=${queueItem[1][2]}&videoDate=${queueItem[1][3]}&videoDuration=${queueItem[1][4]}&videoThumbnail=${queueItem[1][5]}`;
+        url = `/QueueItemTemplate?id=${queueItem[0]}&rating=${queueItem[2]}&videoId=${queueItem[1][0]}&videoName=${queueItem[1][1]}&videoChannel=${queueItem[1][2]}&videoDate=${queueItem[1][3]}&videoDuration=${queueItem[1][4]}&videoThumbnail=${queueItem[1][5]}&canRemove=true`;
         itemId = "item" + queueItem[0];
     }
     else {
@@ -93,7 +95,8 @@ function addToQueue(queueItem) {
         for (i = 0; i < keys.length; i++) {
             queueItem['video'][keys[i]] = queueItem['video'][keys[i]].replace('&', "%26");
         }
-        url = `/QueueItemTemplate?id=${queueItem['id']}&rating=${queueItem['rating']}&videoId=${queueItem['video']['videoId']}&videoName=${queueItem['video']['name']}&videoChannel=${queueItem['video']['channel']}&videoDate=${queueItem['video']['publishedDate']}&videoDuration=${queueItem['video']['duration']}&videoThumbnail=${queueItem['video']['thumbnail']}`;
+        var canRemove = permissions['canRemove'] || isHost;
+        url = `/QueueItemTemplate?id=${queueItem['id']}&rating=${queueItem['rating']}&videoId=${queueItem['video']['videoId']}&videoName=${queueItem['video']['name']}&videoChannel=${queueItem['video']['channel']}&videoDate=${queueItem['video']['publishedDate']}&videoDuration=${queueItem['video']['duration']}&videoThumbnail=${queueItem['video']['thumbnail']}&canRemove=${canRemove}`;
         itemId = "item" + queueItem['id'];
     }
     url = url.split(' ').join('%20');
@@ -231,7 +234,7 @@ function addVote(id) {
 function remove(id) {
 
     if (Cookies.get('sessionId') != "") {
-        appHub.invoke("Remove", Cookies.get('sessionId'), id).catch(function (err) {
+        appHub.invoke("Remove", Cookies.get('sessionId'), Cookies.get('userId'), id).catch(function (err) {
             return console.error(err.toString());
         });
     }
@@ -290,6 +293,7 @@ function checkQueueEmpty(onStop) {
         if ($("#playerCard").css("display") == "none" || onStop == true) {
             document.getElementById('playButton').disabled = true;
             document.getElementById('stopButton').disabled = true;
+
             $(".button.play").removeClass('pause');
         }
         return true;

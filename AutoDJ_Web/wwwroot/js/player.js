@@ -24,6 +24,7 @@ appHub.on("PlayerReturned", (video, time, paused) => {
 function nextSong(result) {
 
     if (result != "empty") {
+
         popFromQueue();
         document.getElementById("videoTitle").textContent = result[0];
 
@@ -52,8 +53,15 @@ appHub.on("SyncPlayer", (video, time, paused) => {
     else
         playerState = "playing";
 
+    if (permissions['HidePlayer'] && !$("#playerBody").hasClass("playerHide") && !isHost) {
+
+        $("#playerBody").addClass("playerHide");
+        $("#playerShowHideBtn").html("Show");
+    }
+    else
+        initPlayer(video[1], time);
+
     document.getElementById("videoTitle").textContent = video[0];
-    initPlayer(video[1], time);
     $("#playerCard").fadeIn(500);
     checkQueueEmpty();
     document.getElementById('playButton').disabled = false;

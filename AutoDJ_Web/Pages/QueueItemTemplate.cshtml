@@ -18,7 +18,8 @@
 
         <div class="col-3 btn-group-vertical p-0 pl-3" style="min-width: 80px; max-height:70px">
             <button type="button" class="btn btn-outline-primary" id="addVote_@Model.MyItem.Id" onclick="addVote(@Model.MyItem.Id)" style="font-size: 0.8em; min-width: 80px">Vote (@Model.MyItem.Rating)</button>
-            <button type="button" class="btn btn-outline-danger" id="remove_@Model.MyItem.Id" onclick="remove(@Model.MyItem.Id)" style="font-size: 0.8em; min-width: 80px">Remove</button>
+            @{string disabled = (bool)Model.CanRemove ? string.Empty : "disabled"; }
+            <button type="button" class="btn btn-outline-danger" id="remove_@Model.MyItem.Id" onclick="remove(@Model.MyItem.Id)" style="font-size: 0.8em; min-width: 80px" @disabled>Remove</button>
         </div>
     </div>
 </div>

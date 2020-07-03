@@ -49,8 +49,10 @@ function stopClient() {
 function setupControlsOnPlay() {
 
     $(".button.play").addClass("pause");
-    document.getElementById("stopButton").disabled = false;
-    document.getElementById("skipButton").disabled = false;
+    if (permissions['CanStop'] || isHost) {
+        document.getElementById("stopButton").disabled = false;
+        document.getElementById("skipButton").disabled = false;
+    }
 }
 
 function playClicked() {
@@ -73,7 +75,7 @@ function stopClicked() {
         return;
 
     if (Cookies.get('sessionId') != "") {
-        appHub.invoke("Stop", Cookies.get('sessionId')).catch(function (err) {
+        appHub.invoke("Stop", Cookies.get('sessionId'), Cookies.get('userId')).catch(function (err) {
             return console.error(err.toString());
         });
     }

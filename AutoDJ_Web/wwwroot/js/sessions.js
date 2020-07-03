@@ -1,4 +1,6 @@
 ﻿var appHub = new signalR.HubConnectionBuilder().withUrl("/appHub").build();
+var isHost = false;
+var permissions = {"CanStop": true, "CanRemove": true, "CanAddPlaylist": true, "HidePlayer": false, "CanClearQueue": true};
 
 appHub.start().then(function () {
 
@@ -28,9 +30,11 @@ $(".sessionConnected").hide();
 appHub.on("SessionCreated", (sessionId, userId) => {
 
     setSessionCookie(sessionId, userId);
+    isHost = true;
     console.log("Session: " + Cookies.get('sessionId') + " User: " + userId);
     $("#newSessionId").val(sessionId);
     $(".createSessionInitial").hide();
+    $(".permissionsSetup").hide();
     $(".createSessionSuccessful").show();
 
     if (player != null) {
@@ -48,9 +52,14 @@ appHub.on("SessionCreated", (sessionId, userId) => {
         sessionConnected();
 });
 
-appHub.on("SessionJoined", (success, sessionId, userId) => {
+appHub.on("SessionJoined", (success, sessionId, userId, clientPermissions, host) => {
 
     if (success) {
+        permissions = clientPermissions;
+        isHost = host;
+        if (permissions['CanAddPlaylist'] == false && !isHost)
+            $("#playlistToggle").prop('disabled', true);
+
         clearQueue();
         $("#enteredSessionId").removeClass("is-invalid");
         $("#enteredSessionId").addClass("is-valid");
@@ -69,7 +78,6 @@ appHub.on("SessionJoined", (success, sessionId, userId) => {
 
 appHub.on("SessionLeft", () => {
 
-    setSessionCookie('', '');
     stopClient();
     clearQueue();
     sessionDisconnected();
@@ -85,7 +93,8 @@ appHub.on("PingReturned", (sessionId, userId) => {
 
 function createSession() {
 
-    appHub.invoke("CreateSession", Cookies.get('userId')).catch(function (err) {
+    var permissions = [!$("#stopToggle").parent().hasClass("off"), !$("#removeToggle").parent().hasClass("off"), !$("#noPlaylistToggle").parent().hasClass("off"), !$("#hidePlayerToggle").parent().hasClass("off")];
+    appHub.invoke("CreateSession", Cookies.get('userId'), permissions).catch(function (err) {
         return console.error(err.toString());
     });
 }
@@ -126,7 +135,10 @@ function sessionConnected() {
 
     $("#loadingText").html("Syncing Session...")
     $(".overlay").fadeIn(200);
-    $("#navSessionId").html(Cookies.get('sessionId'));
+    if (isHost)
+        $("#navSessionId").html(Cookies.get('sessionId') + " (Host)");
+    else
+        $("#navSessionId").html(Cookies.get('sessionId') + " (User)");
     $("#displaySessionId").val(Cookies.get('sessionId'));
     $(".sessionDisconnected").hide();
     $(".sessionConnected").show();
@@ -139,10 +151,14 @@ function sessionConnected() {
 
 function sessionDisconnected() {
 
+    permissions = { "CanStop": true, "CanRemove": true, "CanAddPlaylist": true, "HidePlayer": false, "CanClearQueue": true };
+    setSessionCookie('', '');
+    isHost = false;
     $(".sessionConnected").hide();
     $(".sessionDisconnected").show();
     $(".createSessionSuccessful").hide();
     $(".createSessionInitial").show();
+    $(".permissionsSetup").show();
     checkQueueEmpty();
 }
 

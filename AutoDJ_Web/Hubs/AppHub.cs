@@ -22,12 +22,13 @@ namespace AutoDJ_Web.Hubs
             search = new YouTubeSearch();
         }
 
-        public async Task CreateSession(string userId)
+        public async Task CreateSession(string userId, bool[] permissions)
         {
             if(SessionHandler.GetUsersSession(userId) == "")
             {
-                string sessionId = SessionHandler.CreateSession();
+                string sessionId = SessionHandler.CreateSession(permissions);
                 userId = SessionHandler.CreateAndAddUser(sessionId);
+                SessionHandler.AddHostUser(sessionId, userId);
                 await Groups.AddToGroupAsync(Context.ConnectionId, sessionId);
                 await Clients.Caller.SendAsync("SessionCreated", sessionId, userId);
             }
@@ -44,12 +45,12 @@ namespace AutoDJ_Web.Hubs
             {
                 userId = SessionHandler.CreateAndAddUser(sessionId);
                 await Groups.AddToGroupAsync(Context.ConnectionId, sessionId);
-                await Clients.Caller.SendAsync("SessionJoined", true, sessionId, userId);
+                await Clients.Caller.SendAsync("SessionJoined", true, sessionId, userId, SessionHandler.GetPermissions(sessionId).PermissionsToDict());
             }
             else if (SessionHandler.GetUsersSession(userId) == sessionId && sessionId != "")
             {
                 await Groups.AddToGroupAsync(Context.ConnectionId, sessionId);
-                await Clients.Caller.SendAsync("SessionJoined", true, sessionId, userId);
+                await Clients.Caller.SendAsync("SessionJoined", true, sessionId, userId, SessionHandler.GetPermissions(sessionId).PermissionsToDict(), SessionHandler.IsHostUser(sessionId, userId));
             }
             else if(!sync)
             {
@@ -171,6 +172,9 @@ namespace AutoDJ_Web.Hubs
         {
             if (SessionHandler.GetUsersSession(userId) == sessionId)
             {
+                if (!SessionHandler.GetPermissions(sessionId).CanAddPlaylist && isPlaylist && !SessionHandler.IsHostUser(sessionId, userId))
+                    return;
+
                 QueueModel myQueue = SessionHandler.GetQueue(sessionId);
                 if (isPlaylist)
                 {
@@ -210,6 +214,9 @@ namespace AutoDJ_Web.Hubs
         {
             if (SessionHandler.GetUsersSession(userId) == sessionId)
             {
+                if (!SessionHandler.GetPermissions(sessionId).CanClearQueue && !SessionHandler.IsHostUser(sessionId, userId))
+                    return;
+
                 QueueModel myQueue = SessionHandler.GetQueue(sessionId);
                 myQueue.Queue.Clear();
                 await Clients.Group(sessionId).SendAsync("ClearQueue");
@@ -273,10 +280,13 @@ namespace AutoDJ_Web.Hubs
             }
         }
 
-        public async Task Remove(string sessionId, int itemId)
+        public async Task Remove(string sessionId, string userId, int itemId)
         {
             if (SessionHandler.IsValidSession(sessionId))
             {
+                if (!SessionHandler.GetPermissions(sessionId).CanRemove && !SessionHandler.IsHostUser(sessionId, userId))
+                    return;
+
                 QueueModel myQueue = SessionHandler.GetQueue(sessionId);
                 QueueItemModel myItem = myQueue.Queue.Where(item => item.Id == itemId).First();
                 myQueue.Queue.Remove(myItem);
@@ -311,8 +321,11 @@ namespace AutoDJ_Web.Hubs
             }
         }
 
-        public async Task Stop(string sessionId)
+        public async Task Stop(string sessionId, string userId)
         {
+            if (!SessionHandler.GetPermissions(sessionId).CanStop && !SessionHandler.IsHostUser(sessionId, userId))
+                return;
+
             await DisposePlayer(sessionId);
         }
 

@@ -175,6 +175,24 @@
                 <div class="createSessionInitial">
                     Invite friends to participate in your queue by creating a session.
                 </div>
+                <br />
+                <div class="permissionsSetup">
+                    <h5>Setup User Permissions</h5>
+                    <div class="row">
+                        <div class="col-7">
+                            <label class="toggleSpacing" for="stopToggle">Allow users to stop/skip videos: </label>
+                            <label class="toggleSpacing" for="removeToggle">Allow users to remove videos: </label>
+                            <label class="toggleSpacing" for="noPlaylistToggle">Allow users to add playlists: </label>
+                            <label class="toggleSpacing" for="hidePlayerToggle">Hide player by default: </label>
+                        </div>
+                        <div class="col-2">
+                            <input type="checkbox" id="stopToggle" data-toggle="toggle" data-on="On" data-off="Off" data-offstyle="light" data-onstyle="light">
+                            <input type="checkbox" id="removeToggle" data-toggle="toggle" data-on="On" data-off="Off" data-offstyle="light" data-onstyle="light">
+                            <input type="checkbox" id="noPlaylistToggle" data-toggle="toggle" data-on="On" data-off="Off" data-offstyle="light" data-onstyle="light">
+                            <input type="checkbox" id="hidePlayerToggle" data-toggle="toggle" data-on="On" data-off="Off" data-offstyle="light" data-onstyle="light">
+                        </div>
+                    </div>
+                </div>
                 <div class="createSessionSuccessful" style="display: none">
                     Session created successfully!<br />Share your Session ID with friends so they can join your queue.
                     <br />
