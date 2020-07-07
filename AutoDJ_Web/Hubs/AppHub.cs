@@ -164,7 +164,7 @@ namespace AutoDJ_Web.Hubs
             catch (Exception e)
             {
                 System.Diagnostics.Debug.WriteLine(e);
-                await Clients.Caller.SendAsync("Search", -1);
+                await Clients.Caller.SendAsync("Search", -1, e.Message);
             }
         }
 

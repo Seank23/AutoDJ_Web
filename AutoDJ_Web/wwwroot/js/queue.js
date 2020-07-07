@@ -95,7 +95,7 @@ function addToQueue(queueItem) {
         for (i = 0; i < keys.length; i++) {
             queueItem['video'][keys[i]] = queueItem['video'][keys[i]].replace('&', "%26");
         }
-        var canRemove = permissions['canRemove'] || isHost;
+        var canRemove = permissions['CanRemove'] || isHost;
         url = `/QueueItemTemplate?id=${queueItem['id']}&rating=${queueItem['rating']}&videoId=${queueItem['video']['videoId']}&videoName=${queueItem['video']['name']}&videoChannel=${queueItem['video']['channel']}&videoDate=${queueItem['video']['publishedDate']}&videoDuration=${queueItem['video']['duration']}&videoThumbnail=${queueItem['video']['thumbnail']}&canRemove=${canRemove}`;
         itemId = "item" + queueItem['id'];
     }

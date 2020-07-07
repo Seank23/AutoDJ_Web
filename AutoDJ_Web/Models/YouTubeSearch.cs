@@ -33,10 +33,12 @@ namespace AutoDJ_Web
 
             var searchListResponse = await searchListRequest.ExecuteAsync();
 
-            var videoListRequest = youtubeService.Videos.List("snippet, contentDetails");
+            var videoListRequest = youtubeService.Videos.List("snippet,contentDetails");
             string idList = "";
             foreach(var result in searchListResponse.Items)
                 idList += result.Id.VideoId + ",";
+
+            idList = idList.Substring(0, idList.Length - 1);
             videoListRequest.Id = idList;
 
             var videoListResponse = await videoListRequest.ExecuteAsync();
@@ -46,7 +48,7 @@ namespace AutoDJ_Web
             for (int i = 0; i < videoListResponse.Items.Count; i++)
             {
                 var videoResult = videoListResponse.Items[i];
-                string[] resultArray = { videoResult.Id, videoResult.Snippet.Title, videoResult.Snippet.ChannelTitle, videoResult.Snippet.PublishedAt.Value.ToShortDateString(),
+                string[] resultArray = { videoResult.Id, videoResult.Snippet.Title, videoResult.Snippet.ChannelTitle, videoResult.Snippet.PublishedAt.Substring(0, 10),
                                          videoResult.ContentDetails.Duration, videoResult.Snippet.Thumbnails.Default__.Url };
                 videoDetails.Add(resultArray);
             }
@@ -70,7 +72,7 @@ namespace AutoDJ_Web
             for (int i = 0; i < searchListResponse.Items.Count; i++)
             {
                 var playlistResult = searchListResponse.Items[i];
-                string[] resultArray = { playlistResult.Id.PlaylistId, playlistResult.Snippet.Title, playlistResult.Snippet.ChannelTitle, playlistResult.Snippet.PublishedAt.Value.ToShortDateString(), 
+                string[] resultArray = { playlistResult.Id.PlaylistId, playlistResult.Snippet.Title, playlistResult.Snippet.ChannelTitle, playlistResult.Snippet.PublishedAt.Substring(0, 10), 
                                          playlistResult.Snippet.Description, playlistResult.Snippet.Thumbnails.Default__.Url };
                 playlistDetails.Add(resultArray);
             }
@@ -82,12 +84,12 @@ namespace AutoDJ_Web
 
         public async Task<List<VideoModel>> GetPlaylistVideos(string playlistId)
         {
-            var listRequest = youtubeService.PlaylistItems.List("snippet, contentDetails");
+            var listRequest = youtubeService.PlaylistItems.List("snippet,contentDetails");
             listRequest.PlaylistId = playlistId;
             listRequest.MaxResults = 50;
 
             var listResponse = await listRequest.ExecuteAsync();
-            var videoListRequest = youtubeService.Videos.List("snippet, contentDetails");
+            var videoListRequest = youtubeService.Videos.List("snippet,contentDetails");
 
             string pageToken = "";
             List<string[]> videoDetails = new List<string[]>();
@@ -110,8 +112,8 @@ namespace AutoDJ_Web
                 for (int i = 0; i < videoListResponse.Items.Count; i++)
                 {
                     var videoResult = videoListResponse.Items[i];
-                    string[] resultArray = { videoResult.Id, videoResult.Snippet.Title, videoResult.Snippet.ChannelTitle, videoResult.ContentDetails.Duration, 
-                                             videoResult.Snippet.PublishedAt.Value.ToShortDateString(), videoResult.Snippet.Thumbnails.Default__.Url };
+                    string[] resultArray = { videoResult.Id, videoResult.Snippet.Title, videoResult.Snippet.ChannelTitle, videoResult.Snippet.PublishedAt.Substring(0, 10),
+                                             videoResult.ContentDetails.Duration, videoResult.Snippet.Thumbnails.Default__.Url };
                     videoDetails.Add(resultArray);
                 }
             }
