@@ -1,6 +1,8 @@
 # AutoDJ
 https://autodj.azurewebsites.net/
 
+![AutoDJ](https://github.com/Seank23/AutoDJ_Web/blob/master/Images/AutoDJ1.PNG)
+
 ## What is it?
 AutoDJ is a web app that puts the power of queueing music into the hands of all listeners. Having a party? Playing online with friends? Use AutoDJ to create the perfect music queue for any situation: by allowing everyone to participate. Simply create a session and invite friends to join. Any user can add a song to the queue by using the search bar and selecting a result. Once added to the queue, other users can 'Vote' for a song to increase its rating and importantly, its position in the queue.
 
