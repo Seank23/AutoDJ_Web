@@ -1,5 +1,5 @@
 # AutoDJ
-https://autodj.azurewebsites.net/
+URL: https://autodj.azurewebsites.net/
 
 ![AutoDJ](https://github.com/Seank23/AutoDJ_Web/blob/master/Images/AutoDJ1.PNG)
 
@@ -24,20 +24,20 @@ AutoDJ uses YouTube for music streaming and makes use of YouTube's Data and IFra
 
 ## Guide
 ### Creating A Session
-To create a session, click on the 'Create Session' button in the navbar. You will be presented with a confirmation popup window, here you will also be able to enable or disable certain functionality for other users.
-![CreateSession](https://github.com/Seank23/AutoDJ_Web/blob/master/Images/CreateSession.PNG)
-Once a session has been successfully created, you will be given a Session ID. This is a six-digit code which identifies your session and allows others to connect to it. Your Session ID is displayed in the navbar for easy access, clicking on this will present a popup window also displaying the SessionID but in a copyable form.
+To create a session, click on the 'Create Session' button in the navbar. You will be presented with a confirmation popup window, here you will also be able to enable or disable certain functionality for other users.<br/><br/>
+![CreateSession](https://github.com/Seank23/AutoDJ_Web/blob/master/Images/CreateSession.PNG)<br/><br/>
+Once a session has been successfully created, you will be given a Session ID. This is a six-digit code which identifies your session and allows others to connect to it. Your Session ID is displayed in the navbar for easy access, clicking on this will present a popup window also displaying the SessionID but in a copyable form.<br/><br/>
 ![SessionCreated](https://github.com/Seank23/AutoDJ_Web/blob/master/Images/SessionCreated.PNG)
 
 ### Joining A Session
 To join a session, click on the 'Join Session' button in the navbar. You will be presented with a popup window containing a field to enter a Session ID. Simply enter the Session ID provided by the session's creator, if successful your queue will be synced with the session.
 
 ### Adding A Song
-When you want to add a song to the queue, enter the name of the song or other relevant search criteria into the Add Song search bar, making sure the 'Video' toggle is selected and click the Search button. A request will be sent to YouTube's searching API which may take a few moments to process. Once the request has been processed you will be shown upto 5 video results to choose from, with details about the video and its thumbnail being displayed. Once you choose a video, click the 'Add To Queue' button and the video will be placed on the queue with one vote.
+When you want to add a song to the queue, enter the name of the song or other relevant search criteria into the Add Song search bar, making sure the 'Video' toggle is selected and click the Search button. A request will be sent to YouTube's searching API which may take a few moments to process. Once the request has been processed you will be shown upto 5 video results to choose from, with details about the video and its thumbnail being displayed. Once you choose a video, click the 'Add To Queue' button and the video will be placed on the queue with one vote.<br/><br/>
 ![AddSong](https://github.com/Seank23/AutoDJ_Web/blob/master/Images/AddSong.PNG)
 
 ### Adding A Playlist
-** This feature may be disabled for session users **
-Similarly to adding a song, a YouTube playlist can be added to the queue by entering keywords into the Add Song search bar and selecting 'Playlist' from the the toggle. You will be presented with upto 5 relevant YouTube playlists with accompanying details to choose from. Once a playlist is added to the queue, the app will retrive all videos and add them to queue individually, this may take some time especially for large playlists. Videos added from a playlist will have no votes by default.
+** This feature may be disabled for session users ** <br/><br/>
+Similarly to adding a song, a YouTube playlist can be added to the queue by entering keywords into the Add Song search bar and selecting 'Playlist' from the the toggle. You will be presented with upto 5 relevant YouTube playlists with accompanying details to choose from. Once a playlist is added to the queue, the app will retrive all videos and add them to queue individually, this may take some time especially for large playlists. Videos added from a playlist will have no votes by default.<br/><br/>
 ![AddPlaylist](https://github.com/Seank23/AutoDJ_Web/blob/master/Images/AddPlaylist.PNG)
 
