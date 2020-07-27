@@ -24,6 +24,16 @@ a {
   border-color: #1861ac;
 }
 
+p {
+    text-align: justify;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 1rem;
+}
+
 /* Sticky footer styles
 -------------------------------------------------- */
 html {
@@ -171,6 +181,17 @@ body {
 
 .toggleSpacing {
     margin-bottom: 0.7rem;
+}
+
+.helpModal {
+    max-width: none !important;
+    width: 80%;
+}
+
+.center {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 @media only screen and (max-width: 1200px) {

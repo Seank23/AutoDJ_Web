@@ -272,3 +272,41 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="helpModal" tabindex="-1" role="dialog" aria-labelledby="helpTitle" aria-hidden="true">
+    <div class="helpModal modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="helpTitle">Help</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div role="tabpanel">
+                    <ul class="nav nav-tabs mb-3" role="tablist">
+                        <li role="presentation" class="nav-item active">
+                            <a class="nav-link" href="#aboutTab" aria-controls="aboutTab" role="tab" data-toggle="tab">About</a>
+
+                        </li>
+                        <li role="presentation" class="nav-item">
+                            <a class="nav-link" href="#guideTab" aria-controls="guideTab" role="tab" data-toggle="tab">Guide</a>
+
+                        </li>
+                    </ul>
+                    <div class="tab-content">
+                        <div role="tabpanel" class="tab-pane active" id="aboutTab">
+                            <partial name="_About" />
+                        </div>
+                        <div role="tabpanel" class="tab-pane" id="guideTab">
+                            <partial name="_Guide" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
